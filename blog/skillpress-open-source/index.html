@@ -3,8 +3,8 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>ReleasePress is open source</title>
-		<meta name="description" content="Announcing ReleasePress, an open source CLI for release and export hygiene.">
+		<title>SkillPress is open source</title>
+		<meta name="description" content="Announcing SkillPress, an open source package manager for agent guidance.">
 		<link rel="alternate" href="/feed/feed.xml" type="application/atom+xml" title="Attebury">
 		
 		
@@ -498,34 +498,29 @@ pre[class*="language-diff-"] {
 				
 
 
-<h1 id="releasepress-is-open-source">ReleasePress is open source</h1>
+<h1 id="skillpress-is-open-source">SkillPress is open source</h1>
 
 <ul class="post-metadata">
-	<li><time datetime="2026-07-09">09 July 2026</time></li>
+	<li><time datetime="2026-07-10">10 July 2026</time></li>
 </ul>
 
-<p>I'm open-sourcing <a href="https://github.com/attebury/releasepress">ReleasePress</a>. I built it because I was running several CLI tools at once and kept stepping on my own feet.</p>
-<p>When you're developing more than one tool in parallel, local promotion stops being a convenience and starts being a coordination problem. Tool B depends on a version of Tool A that's installed on your machine. You promote a half-finished change to A because you're testing B. Now B works, A is broken, and you're not always sure which install is which. I needed a way to control when and how tools were promoted locally, so a change to one wouldn't silently wreck another's use of it.</p>
-<p>The same problem showed up at the boundary between private development and public release. I've been working against a local Gitea installation. That's useful, but it also means the repo on my machine is not the repo the world should see. Operator config, lane state, agent skills, scripts I wrote at midnight, all of it lives in the same tree. I wanted to choose what gets deployed publicly, preview it before it goes anywhere, and not treat &quot;git push&quot; as the same thing as &quot;release.&quot;</p>
-<p>ReleasePress is built for that. It exports a public tree from an allowlist, scans it for secrets and private paths, and publishes to a controlled destination for human review. Staging isn't delivery. Preview isn't publication. Nothing public moves until someone has actually looked.</p>
-<p>The workflow is intentionally boring:</p>
-<ol>
-<li><strong>Export</strong> a public tree from your allowlist</li>
-<li><strong>Scan</strong> for secrets and private paths</li>
-<li><strong>Stage</strong> to a local or private review repo</li>
-<li><strong>Attest</strong> after a human has actually looked at it</li>
-<li><strong>Deliver</strong> to configured providers only when explicitly approved</li>
-</ol>
-<pre class="language-bash" tabindex="0"><code class="language-bash">releasepress release plan <span class="token parameter variable">--json</span> <span class="token parameter variable">--config</span> releasepress.config.json
-releasepress release prepare <span class="token parameter variable">--json</span> <span class="token parameter variable">--config</span> releasepress.config.json <span class="token parameter variable">--out</span> /tmp/releasepress/public-tree
-releasepress release publish-review <span class="token parameter variable">--json</span> <span class="token parameter variable">--config</span> releasepress.config.json <span class="token parameter variable">--path</span> /tmp/releasepress/public-tree <span class="token parameter variable">--target</span> public-review
-releasepress release attest <span class="token parameter variable">--json</span> <span class="token parameter variable">--config</span> releasepress.config.json <span class="token parameter variable">--path</span> /tmp/releasepress/public-tree <span class="token parameter variable">--target</span> public-review --approve-public-review
-releasepress release deliver <span class="token parameter variable">--json</span> <span class="token parameter variable">--config</span> releasepress.config.json <span class="token parameter variable">--path</span> /tmp/releasepress/public-tree <span class="token parameter variable">--target</span> npm-beta --approve-public npm-beta</code></pre>
-<p>Every step writes JSON receipts to <code>.releasepress-report/</code>. ReleasePress doesn't replace your build tools, your forge, or your package registry. It sits in front of them and keeps the boundaries explicit: what's local, what's under review, and what's actually public.</p>
-<p>It's early. The contracts are strict and the gates fail closed. That's the point.</p>
-<p>Source and docs: <a href="https://github.com/attebury/releasepress">github.com/attebury/releasepress</a></p>
+<p>I'm open-sourcing <a href="https://github.com/attebury/skillpress">SkillPress</a>. I built it for the same reason I built ReleasePress: I had too many moving parts and not enough control over what was actually installed.</p>
+<p>Once you're developing more than one CLI tool with agent skills, the skills stop feeling like documentation and start feeling like dependencies. Runlane has skills. ReleasePress has skills. Remogram has skills. They live in the repo under <code>agent-skills/src</code>, scoped by tool, with contracts and policy rules wrapped around them. That's the canonical source.</p>
+<p>But agents don't read the repo. They read what's installed.</p>
+<p>Codex looks in <code>~/.codex/skills</code>. Cursor wants rules under <code>.cursor/rules/skillpress</code>. Claude Code has its own tree. Antigravity has another. Each surface wants a slightly different shape, and each one is easy to edit by hand when you're in a hurry. So we do. We patch the installed copy, tell ourselves we'll backport it later, and then we can't remember which machine has which version of which skill.</p>
+<p>That's not a workflow. That's drift with extra steps.</p>
+<p>SkillPress treats provider directories as install caches, not source. You edit skills in the repo. SkillPress syncs them to the right provider surface, records hashes in the installed header, and gives you commands to inspect what's stale before you trust it.</p>
+<pre class="language-bash" tabindex="0"><code class="language-bash">skillpress status <span class="token parameter variable">--json</span> <span class="token parameter variable">--config</span> skillpress.config.json
+skillpress doctor <span class="token parameter variable">--json</span> <span class="token parameter variable">--tool</span> runlane <span class="token parameter variable">--provider</span> codex
+skillpress <span class="token function">sync</span> <span class="token parameter variable">--json</span> <span class="token parameter variable">--config</span> skillpress.config.json <span class="token parameter variable">--provider</span> cursor <span class="token parameter variable">--tool</span> releasepress
+skillpress repair-plan <span class="token parameter variable">--json</span></code></pre>
+<p><code>status</code> tells you what's installed and where. <code>doctor</code> runs policy checks against the source tree: frontmatter shape, unsafe command patterns, interactive prompts that'll block CI, that kind of thing. <code>sync</code> pushes canonical skills into a provider target. <code>repair-plan</code> is read-only. It tells you what needs a resync without rewriting anything behind your back.</p>
+<p>SkillPress doesn't write the skills. It doesn't promote CLI binaries. It doesn't run lanes or decide merge authority. It owns one narrow job: get the right guidance onto the right surface, keep the install honest, and make drift visible before it becomes habit.</p>
+<p>If you're running multiple agent tools against the same product repo, you've probably already felt this. You fix a skill in source, open Cursor, and nothing changes because Cursor is still reading yesterday's cache. Or you fix it in the cache because it's faster, and the repo falls behind. SkillPress is built to keep that boundary clean.</p>
+<p>It's early. The policy packs are strict on purpose. The installed headers are there so you can see when a provider copy is lying to you.</p>
+<p>Source and docs: <a href="https://github.com/attebury/skillpress">github.com/attebury/skillpress</a></p>
 
-<ul class="links-nextprev"><li class="links-nextprev-next">Next →<br><a href="/blog/skillpress-open-source/">SkillPress is open source</a></li>
+<ul class="links-nextprev"><li class="links-nextprev-prev">← Previous<br> <a href="/blog/releasepress-open-source/">ReleasePress is open source</a></li>
 </ul>
 
 			</heading-anchors>
@@ -535,7 +530,7 @@ releasepress release deliver <span class="token parameter variable">--json</span
 			<p>&copy; 2026 Attebury</p>
 		</footer>
 
-		<!-- This page `/blog/releasepress-open-source/` was built on 2026-07-09T21:35:46.380Z -->
+		<!-- This page `/blog/skillpress-open-source/` was built on 2026-07-09T21:35:46.381Z -->
 		<script type="module" src="/dist/cC8wS6ZjFU.js"></script>
 	</body>
 </html>

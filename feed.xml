@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Attebury</title>
+    <link>https://attebury.dev/</link>
+    <description>Notes and writing.</description>
+    <atom:link href="https://attebury.dev/feed.xml" rel="self" type="application/rss+xml"/>
+    <item>
+      <title>ReleasePress is open source</title>
+      <link>https://attebury.dev/2026/07/09/releasepress-open-source/</link>
+      <pubDate>Thu, 09 Jul 2026 00:00:00 GMT</pubDate>
+      <description>&lt;p&gt;I&#39;m open-sourcing &lt;a href=&quot;https://github.com/attebury/releasepress&quot;&gt;ReleasePress&lt;/a&gt;, a CLI for release and export hygiene.&lt;/p&gt;
+&lt;p&gt;Most repos accumulate private material — operator configs, lane state, agent skills, local scripts, coverage output — that should never ship in a public tree. ReleasePress builds a reviewable public export from an explicit allowlist, scans it for disallowed surfaces, and gates any public delivery behind human attestation.&lt;/p&gt;
+&lt;p&gt;The workflow is deliberately boring:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;Export&lt;/strong&gt; a public tree from your allowlist&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Scan&lt;/strong&gt; for secrets and private paths&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Stage&lt;/strong&gt; to a local or private review repo&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Attest&lt;/strong&gt; after a human has actually looked at it&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Deliver&lt;/strong&gt; to configured providers (git remotes, npm, etc.) only when explicitly approved&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;ReleasePress composes with your existing build, forge, and package tools. It does not replace them. It owns the hygiene layer: what goes out, what stays in, and whether the operator has signed off before anything public moves.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;releasepress release plan --json --config releasepress.config.json
+releasepress release prepare --json --config releasepress.config.json --out /tmp/releasepress/public-tree
+releasepress release publish-review --json --config releasepress.config.json --path /tmp/releasepress/public-tree --target public-review
+releasepress release attest --json --config releasepress.config.json --path /tmp/releasepress/public-tree --target public-review --approve-public-review
+releasepress release deliver --json --config releasepress.config.json --path /tmp/releasepress/public-tree --target npm-beta --approve-public npm-beta
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Every step writes JSON receipts to &lt;code&gt;.releasepress-report/&lt;/code&gt;. Staging is not delivery. Local promote is not a public release. The status command keeps those boundaries explicit so you don&#39;t accidentally ship the wrong tree.&lt;/p&gt;
+&lt;p&gt;If you maintain repos with mixed public and private surfaces — monorepos, agent tooling, anything with operator-only config — this is the tool I wanted and couldn&#39;t find. It&#39;s early, but the contracts are strict and the gates fail closed.&lt;/p&gt;
+&lt;p&gt;Source and docs: &lt;a href=&quot;https://github.com/attebury/releasepress&quot;&gt;github.com/attebury/releasepress&lt;/a&gt;&lt;/p&gt;
+</description>
+    </item>
+  </channel>
+</rss>

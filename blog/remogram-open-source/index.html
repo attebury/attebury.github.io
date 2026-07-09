@@ -3,8 +3,8 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>SkillPress is open source</title>
-		<meta name="description" content="Announcing SkillPress, an open source package manager for agent guidance.">
+		<title>Remogram is open source</title>
+		<meta name="description" content="Announcing Remogram, an open source forge boundary for agent-readable JSON facts.">
 		<link rel="alternate" href="/feed/feed.xml" type="application/atom+xml" title="Attebury">
 		
 		
@@ -498,29 +498,29 @@ pre[class*="language-diff-"] {
 				
 
 
-<h1 id="skillpress-is-open-source">SkillPress is open source</h1>
+<h1 id="remogram-is-open-source">Remogram is open source</h1>
 
 <ul class="post-metadata">
-	<li><time datetime="2026-07-10">10 July 2026</time></li>
+	<li><time datetime="2026-07-11">11 July 2026</time></li>
 </ul>
 
-<p>I'm open-sourcing <a href="https://github.com/attebury/skillpress">SkillPress</a>. I built it for the same reason I built ReleasePress: I had too many moving parts and not enough control over what was actually installed.</p>
-<p>Once you're developing more than one CLI tool with agent skills, the skills stop feeling like documentation and start feeling like dependencies. Runlane has skills. ReleasePress has skills. Remogram has skills. They live in the repo under <code>agent-skills/src</code>, scoped by tool, with contracts and policy rules wrapped around them. That's the canonical source.</p>
-<p>But agents don't read the repo. They read what's installed.</p>
-<p>Codex looks in <code>~/.codex/skills</code>. Cursor wants rules under <code>.cursor/rules/skillpress</code>. Claude Code has its own tree. Antigravity has another. Each surface wants a slightly different shape, and each one is easy to edit by hand when you're in a hurry. So we do. We patch the installed copy, tell ourselves we'll backport it later, and then we can't remember which machine has which version of which skill.</p>
-<p>That's not a workflow. That's drift with extra steps.</p>
-<p>SkillPress treats provider directories as install caches, not source. You edit skills in the repo. SkillPress syncs them to the right provider surface, records hashes in the installed header, and gives you commands to inspect what's stale before you trust it.</p>
-<pre class="language-bash" tabindex="0"><code class="language-bash">skillpress status <span class="token parameter variable">--json</span> <span class="token parameter variable">--config</span> skillpress.config.json
-skillpress doctor <span class="token parameter variable">--json</span> <span class="token parameter variable">--tool</span> runlane <span class="token parameter variable">--provider</span> codex
-skillpress <span class="token function">sync</span> <span class="token parameter variable">--json</span> <span class="token parameter variable">--config</span> skillpress.config.json <span class="token parameter variable">--provider</span> cursor <span class="token parameter variable">--tool</span> releasepress
-skillpress repair-plan <span class="token parameter variable">--json</span></code></pre>
-<p><code>status</code> tells you what's installed and where. <code>doctor</code> runs policy checks against the source tree: frontmatter shape, unsafe command patterns, interactive prompts that'll block CI, that kind of thing. <code>sync</code> pushes canonical skills into a provider target. <code>repair-plan</code> is read-only. It tells you what needs a resync without rewriting anything behind your back.</p>
-<p>SkillPress doesn't write the skills. It doesn't promote CLI binaries. It doesn't run lanes or decide merge authority. It owns one narrow job: get the right guidance onto the right surface, keep the install honest, and make drift visible before it becomes habit.</p>
-<p>If you're running multiple agent tools against the same product repo, you've probably already felt this. You fix a skill in source, open Cursor, and nothing changes because Cursor is still reading yesterday's cache. Or you fix it in the cache because it's faster, and the repo falls behind. SkillPress is built to keep that boundary clean.</p>
-<p>It's early. The policy packs are strict on purpose. The installed headers are there so you can see when a provider copy is lying to you.</p>
-<p>Source and docs: <a href="https://github.com/attebury/skillpress">github.com/attebury/skillpress</a></p>
+<p>I'm open-sourcing <a href="https://github.com/attebury/remogram">Remogram</a>. I built it because agents kept guessing about forge state, and the tools we had were built for humans reading prose in a terminal.</p>
+<p>I run a local Gitea installation for most of my development work. That's been good for previewing changes and keeping public repos separate from the mess on my machine. But once agents entered the workflow, the forge became another surface that needed a contract. An agent doesn't need a paragraph about pull request #47. It needs to know whether the head is stale, whether checks finished, whether merge is blocked, and what the forge actually thinks the base and source refs are.</p>
+<p>The official CLIs can get you there, if you're willing to scrape text and hope the format doesn't change. That's fragile, and it mixes up two jobs that shouldn't share a pipe: reading forge state and deciding what to do about it.</p>
+<p>Remogram sits at the boundary. It talks to Gitea, GitHub, or GitLab through HTTP APIs and returns provider-attributed JSON facts. Read and plan by default. Writes are opt-in, listed explicitly in config, and gated so an agent can't merge or publish by accident because the command happened to exist.</p>
+<pre class="language-bash" tabindex="0"><code class="language-bash">remogram doctor <span class="token parameter variable">--json</span>
+remogram repo status <span class="token parameter variable">--json</span>
+remogram cr view <span class="token parameter variable">--number</span> <span class="token number">1</span> <span class="token parameter variable">--json</span>
+remogram cr checks <span class="token parameter variable">--number</span> <span class="token number">1</span> <span class="token parameter variable">--json</span>
+remogram merge plan <span class="token parameter variable">--number</span> <span class="token number">1</span> <span class="token parameter variable">--json</span></code></pre>
+<p><code>doctor</code> checks config, auth presence, provider capabilities, and write policy before you trust anything else. <code>cr view</code> reconciles forge-reported SHAs against your local git. If the head drifted, you get <code>stale_head</code>, not a silent lie. <code>merge plan</code> lists blockers. It doesn't execute a merge. <code>mergeability: clean</code> means the git side looks conflict-free. It is not permission to merge.</p>
+<p>That's the distinction I care about. Remogram emits facts. Runlane, Worklane, and whatever planning layer you use can interpret intent and route work. Those concerns stay outside Remogram's JSON on purpose. You won't find lane roles, task ids, or handoff metadata mixed into forge packets. If planning concepts leak into the fact layer, every consumer inherits the wrong abstraction.</p>
+<p>Remogram also ships as an MCP server. Same commands, same packets, same boundaries. Point it at a repo with <code>.remogram.json</code> and agents can inspect forge state without improvising shell pipelines.</p>
+<p>If you're dogfooding multiple CLI tools against a private forge while keeping public release paths separate, you've probably hit this already. You want agents to open a change request, read checks, and report blockers without becoming merge authority. Remogram is built for that narrow job.</p>
+<p>It's early. The packets are strict. The write surface is closed by default. Forge-sourced strings are treated as untrusted prose even when the envelope is good.</p>
+<p>Source and docs: <a href="https://github.com/attebury/remogram">github.com/attebury/remogram</a></p>
 
-<ul class="links-nextprev"><li class="links-nextprev-prev">← Previous<br> <a href="/blog/releasepress-open-source/">ReleasePress is open source</a></li><li class="links-nextprev-next">Next →<br><a href="/blog/remogram-open-source/">Remogram is open source</a></li>
+<ul class="links-nextprev"><li class="links-nextprev-prev">← Previous<br> <a href="/blog/skillpress-open-source/">SkillPress is open source</a></li>
 </ul>
 
 			</heading-anchors>
@@ -530,7 +530,7 @@ skillpress repair-plan <span class="token parameter variable">--json</span></cod
 			<p>&copy; 2026 Attebury</p>
 		</footer>
 
-		<!-- This page `/blog/skillpress-open-source/` was built on 2026-07-09T21:37:58.395Z -->
+		<!-- This page `/blog/remogram-open-source/` was built on 2026-07-09T21:37:58.395Z -->
 		<script type="module" src="/dist/cC8wS6ZjFU.js"></script>
 	</body>
 </html>

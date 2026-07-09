@@ -6,11 +6,33 @@
   <subtitle>Notes and writing.</subtitle>
   <link href="https://attebury.dev/feed/feed.xml" rel="self" />
   <link href="https://attebury.dev/" />
-  <updated>2026-07-10T00:00:00Z</updated>
+  <updated>2026-07-11T00:00:00Z</updated>
   <id>https://attebury.dev/</id>
   <author>
     <name>Attebury</name>
   </author>
+  <entry>
+    <title>Remogram is open source</title>
+    <link href="https://attebury.dev/blog/remogram-open-source/" />
+    <updated>2026-07-11T00:00:00Z</updated>
+    <id>https://attebury.dev/blog/remogram-open-source/</id>
+    <content type="html">&lt;p&gt;I&#39;m open-sourcing &lt;a href=&quot;https://github.com/attebury/remogram&quot;&gt;Remogram&lt;/a&gt;. I built it because agents kept guessing about forge state, and the tools we had were built for humans reading prose in a terminal.&lt;/p&gt;
+&lt;p&gt;I run a local Gitea installation for most of my development work. That&#39;s been good for previewing changes and keeping public repos separate from the mess on my machine. But once agents entered the workflow, the forge became another surface that needed a contract. An agent doesn&#39;t need a paragraph about pull request #47. It needs to know whether the head is stale, whether checks finished, whether merge is blocked, and what the forge actually thinks the base and source refs are.&lt;/p&gt;
+&lt;p&gt;The official CLIs can get you there, if you&#39;re willing to scrape text and hope the format doesn&#39;t change. That&#39;s fragile, and it mixes up two jobs that shouldn&#39;t share a pipe: reading forge state and deciding what to do about it.&lt;/p&gt;
+&lt;p&gt;Remogram sits at the boundary. It talks to Gitea, GitHub, or GitLab through HTTP APIs and returns provider-attributed JSON facts. Read and plan by default. Writes are opt-in, listed explicitly in config, and gated so an agent can&#39;t merge or publish by accident because the command happened to exist.&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;remogram doctor &lt;span class=&quot;token parameter variable&quot;&gt;--json&lt;/span&gt;
+remogram repo status &lt;span class=&quot;token parameter variable&quot;&gt;--json&lt;/span&gt;
+remogram cr view &lt;span class=&quot;token parameter variable&quot;&gt;--number&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;--json&lt;/span&gt;
+remogram cr checks &lt;span class=&quot;token parameter variable&quot;&gt;--number&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;--json&lt;/span&gt;
+remogram merge plan &lt;span class=&quot;token parameter variable&quot;&gt;--number&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;--json&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;code&gt;doctor&lt;/code&gt; checks config, auth presence, provider capabilities, and write policy before you trust anything else. &lt;code&gt;cr view&lt;/code&gt; reconciles forge-reported SHAs against your local git. If the head drifted, you get &lt;code&gt;stale_head&lt;/code&gt;, not a silent lie. &lt;code&gt;merge plan&lt;/code&gt; lists blockers. It doesn&#39;t execute a merge. &lt;code&gt;mergeability: clean&lt;/code&gt; means the git side looks conflict-free. It is not permission to merge.&lt;/p&gt;
+&lt;p&gt;That&#39;s the distinction I care about. Remogram emits facts. Runlane, Worklane, and whatever planning layer you use can interpret intent and route work. Those concerns stay outside Remogram&#39;s JSON on purpose. You won&#39;t find lane roles, task ids, or handoff metadata mixed into forge packets. If planning concepts leak into the fact layer, every consumer inherits the wrong abstraction.&lt;/p&gt;
+&lt;p&gt;Remogram also ships as an MCP server. Same commands, same packets, same boundaries. Point it at a repo with &lt;code&gt;.remogram.json&lt;/code&gt; and agents can inspect forge state without improvising shell pipelines.&lt;/p&gt;
+&lt;p&gt;If you&#39;re dogfooding multiple CLI tools against a private forge while keeping public release paths separate, you&#39;ve probably hit this already. You want agents to open a change request, read checks, and report blockers without becoming merge authority. Remogram is built for that narrow job.&lt;/p&gt;
+&lt;p&gt;It&#39;s early. The packets are strict. The write surface is closed by default. Forge-sourced strings are treated as untrusted prose even when the envelope is good.&lt;/p&gt;
+&lt;p&gt;Source and docs: &lt;a href=&quot;https://github.com/attebury/remogram&quot;&gt;github.com/attebury/remogram&lt;/a&gt;&lt;/p&gt;
+</content>
+  </entry>
   <entry>
     <title>SkillPress is open source</title>
     <link href="https://attebury.dev/blog/skillpress-open-source/" />

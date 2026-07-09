@@ -3,8 +3,8 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>SkillPress is open source</title>
-		<meta name="description" content="Announcing SkillPress, an open source package manager for agent guidance.">
+		<title>When Software Work Gets Shopified</title>
+		<meta name="description" content="AI may compress software roles the way CMS and commerce platforms compressed earlier web work.">
 		<link rel="alternate" href="/feed/feed.xml" type="application/atom+xml" title="Attebury">
 		
 		
@@ -499,33 +499,60 @@ pre[class*="language-diff-"] {
 				
 
 
-<h1 id="skillpress-is-open-source">SkillPress is open source</h1>
+<h1 id="when-software-work-gets-shopified">When Software Work Gets Shopified</h1>
 
 <ul class="post-metadata">
-	<li><time datetime="2026-07-10">10 July 2026</time></li>
-	<li><a href="/tags/open-source/" class="post-tag">open-source</a>, </li>
+	<li><time datetime="2026-05-28">28 May 2026</time></li>
 	<li><a href="/tags/agentic-development/" class="post-tag">agentic-development</a>, </li>
-	<li><a href="/tags/tools/" class="post-tag">tools</a>, </li>
-	<li><a href="/tags/skillpress/" class="post-tag">skillpress</a></li>
+	<li><a href="/tags/field-notes/" class="post-tag">field-notes</a></li>
 </ul>
 
-<p>I'm open-sourcing <a href="https://github.com/attebury/skillpress">SkillPress</a>. I built it for the same reason I built ReleasePress: I had too many moving parts and not enough control over what was actually installed.</p>
-<p>Once you're developing more than one CLI tool with agent skills, the skills stop feeling like documentation and start feeling like dependencies. Runlane has skills. ReleasePress has skills. Remogram has skills. They live in the repo under <code>agent-skills/src</code>, scoped by tool, with contracts and policy rules wrapped around them. That's the canonical source.</p>
-<p>But agents don't read the repo. They read what's installed.</p>
-<p>Codex looks in <code>~/.codex/skills</code>. Cursor wants rules under <code>.cursor/rules/skillpress</code>. Claude Code has its own tree. Antigravity has another. Each surface wants a slightly different shape, and each one is easy to edit by hand when you're in a hurry. So we do. We patch the installed copy, tell ourselves we'll backport it later, and then we can't remember which machine has which version of which skill.</p>
-<p>That's not a workflow. That's drift with extra steps.</p>
-<p>SkillPress treats provider directories as install caches, not source. You edit skills in the repo. SkillPress syncs them to the right provider surface, records hashes in the installed header, and gives you commands to inspect what's stale before you trust it.</p>
-<pre class="language-bash" tabindex="0"><code class="language-bash">skillpress status <span class="token parameter variable">--json</span> <span class="token parameter variable">--config</span> skillpress.config.json
-skillpress doctor <span class="token parameter variable">--json</span> <span class="token parameter variable">--tool</span> runlane <span class="token parameter variable">--provider</span> codex
-skillpress <span class="token function">sync</span> <span class="token parameter variable">--json</span> <span class="token parameter variable">--config</span> skillpress.config.json <span class="token parameter variable">--provider</span> cursor <span class="token parameter variable">--tool</span> releasepress
-skillpress repair-plan <span class="token parameter variable">--json</span></code></pre>
-<p><code>status</code> tells you what's installed and where. <code>doctor</code> runs policy checks against the source tree: frontmatter shape, unsafe command patterns, interactive prompts that'll block CI, that kind of thing. <code>sync</code> pushes canonical skills into a provider target. <code>repair-plan</code> is read-only. It tells you what needs a resync without rewriting anything behind your back.</p>
-<p>SkillPress doesn't write the skills. It doesn't promote CLI binaries. It doesn't run lanes or decide merge authority. It owns one narrow job: get the right guidance onto the right surface, keep the install honest, and make drift visible before it becomes habit.</p>
-<p>If you're running multiple agent tools against the same product repo, you've probably already felt this. You fix a skill in source, open Cursor, and nothing changes because Cursor is still reading yesterday's cache. Or you fix it in the cache because it's faster, and the repo falls behind. SkillPress is built to keep that boundary clean.</p>
-<p>It's early. The policy packs are strict on purpose. The installed headers are there so you can see when a provider copy is lying to you.</p>
-<p>Source and docs: <a href="https://github.com/attebury/skillpress">github.com/attebury/skillpress</a></p>
+<p>AI can feel like a break from software history, but I think it's more useful to see it as a continuation.</p>
+<p>We've been compressing roles for decades. We used to pay one person to design a website, another to code it, another to wire forms, another to publish content, and another to keep the stack running. Then blogs, CMS tools, hosted site builders, and services like Shopify absorbed large parts of that work.</p>
+<p>The work didn't disappear. It moved into platforms.</p>
+<p>Design became themes and systems. Content publishing became an editor. Commerce became a configured service. Hosting became a deploy button. A single operator could do work that once required a small web team.</p>
+<p>AI may do something similar to software development.</p>
+<h2 id="role-compression-is-the-pattern">Role compression is the pattern</h2>
+<p>The important pattern isn't replacement. It's compression.</p>
+<p>When platforms mature, they package repeated work into defaults, workflows, and constraints. The old specialist work becomes a product surface. A smaller team can operate at a higher level.</p>
+<p>That's what happened to many websites. The average business no longer needs a dedicated designer, front-end developer, back-end developer, hosting operator, and analytics consultant just to sell products online. Shopify compressed much of that into a service.</p>
+<p>AI can compress software work in a similar way:</p>
+<ul>
+<li>Scaffolding becomes a prompt or template.</li>
+<li>Boilerplate implementation becomes generated code.</li>
+<li>Refactoring becomes an agent task.</li>
+<li>Test creation becomes a guided loop.</li>
+<li>Documentation updates become part of the change.</li>
+<li>Design translation becomes a conversation with constraints.</li>
+<li>Investigation becomes a context query instead of hours of repo reading.</li>
+</ul>
+<p>If that's accurate, entire areas of software development will get platformed. Not all of software, and not all of engineering judgment. But many repeated slices of implementation, maintenance, migration, and glue work will get absorbed into tools and workflows we haven't fully named yet.</p>
+<h2 id="what-teams-might-look-like">What teams might look like</h2>
+<p>Smaller teams may cover more surface area.</p>
+<p>One person may own product shape, user experience, and implementation for a bounded feature. Another may own platform rules, security posture, release quality, and proof. A designer may work directly with generated components and semantic UI contracts. A domain expert may author workflows and acceptance criteria that agents turn into code.</p>
+<p>The team becomes less like a row of specialists passing tickets downstream and more like a small group of operators coordinating systems.</p>
+<p>That doesn't make engineering easier. It changes where the difficulty lives.</p>
+<p>The hard parts move from reading requirements and typing code to choosing intent, setting boundaries, reviewing generated work, proving behavior, and keeping the system coherent through time.</p>
+<p>In that world, the riskiest gap isn't whether an agent can produce code. The risk is whether the agent is changing the right thing for the right reason, in the right part of the system, with the right proof.</p>
+<h2 id="where-ai-needs-structure">Where AI needs structure</h2>
+<p>AI coding tools are good at local transformation. They edit files, write tests, explain code, and propose refactors. They're less reliable when the work depends on product intent, ownership, unstated decisions, or system boundaries.</p>
+<p>That's where role compression gets messy.</p>
+<p>If one person uses AI to do the work of several roles, that person needs more than a faster editor. They need a way to keep the compressed roles from blending together into guesses.</p>
+<p>The product decision shouldn't disappear into the implementation. The implementation shouldn't invent the contract. The contract shouldn't ignore proof. Proof shouldn't be an afterthought.</p>
+<p>AI makes those separations more important, not less.</p>
+<h2 id="what-we-still-have-to-carry">What we still have to carry</h2>
+<p>I've been building tools for agentic development partly because of this compression. When fewer people cover more roles, the team needs durable answers to boring questions:</p>
+<ul>
+<li>What should be true after this change?</li>
+<li>Who owns this boundary?</li>
+<li>What proof counts as done?</li>
+<li>What context is safe to give an agent, and what is only evidence?</li>
+</ul>
+<p>You can answer those in tickets, chat, and memory for a while. Then the team moves faster and the answers stop matching the code.</p>
+<p>Compressed teams still need a map of what they're building. AI can help produce the code. We still have to know what should be true, who owns it, what rules apply, and how to prove the change is done.</p>
+<p>That's not a product pitch. It's the problem I'm working in.</p>
 
-<ul class="links-nextprev"><li class="links-nextprev-prev">← Previous<br> <a href="/blog/releasepress-open-source/">ReleasePress is open source</a></li><li class="links-nextprev-next">Next →<br><a href="/blog/remogram-open-source/">Remogram is open source</a></li>
+<ul class="links-nextprev"><li class="links-nextprev-next">Next →<br><a href="/blog/feature-waves-not-big-releases/">Feature Waves, Not Big Releases</a></li>
 </ul>
 
 			</heading-anchors>
@@ -535,7 +562,7 @@ skillpress repair-plan <span class="token parameter variable">--json</span></cod
 			<p>&copy; 2026 Attebury</p>
 		</footer>
 
-		<!-- This page `/blog/skillpress-open-source/` was built on 2026-07-09T22:20:22.043Z -->
+		<!-- This page `/blog/when-software-work-gets-shopified/` was built on 2026-07-09T22:20:22.043Z -->
 		<script type="module" src="/dist/cC8wS6ZjFU.js"></script>
 	</body>
 </html>

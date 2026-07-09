@@ -97,4 +97,355 @@ releasepress release deliver &lt;span class=&quot;token parameter variable&quot;
 &lt;p&gt;Source and docs: &lt;a href=&quot;https://github.com/attebury/releasepress&quot;&gt;github.com/attebury/releasepress&lt;/a&gt;&lt;/p&gt;
 </content>
   </entry>
+  <entry>
+    <title>Trace Turns Agent Runs Into Audits</title>
+    <link href="https://attebury.dev/blog/trace-turns-agent-runs-into-audits/" />
+    <updated>2026-06-05T00:00:00Z</updated>
+    <id>https://attebury.dev/blog/trace-turns-agent-runs-into-audits/</id>
+    <content type="html">&lt;p&gt;Agent work is easy to watch and hard to audit.&lt;/p&gt;
+&lt;p&gt;You can read the final diff, skim the transcript, count tokens, review tests. Those are useful signals, but they aren&#39;t enough.&lt;/p&gt;
+&lt;p&gt;The useful question is sharper: did the run deserve trust?&lt;/p&gt;
+&lt;p&gt;Trace turns a completed agent run into evidence that can be reviewed, compared, and improved.&lt;/p&gt;
+&lt;h2 id=&quot;the-diff-is-not-the-whole-run&quot;&gt;The diff is not the whole run&lt;/h2&gt;
+&lt;p&gt;A finished diff can look reasonable while hiding the cost of getting there.&lt;/p&gt;
+&lt;p&gt;Maybe the agent read half the repo before finding the right file. Maybe it asked for the same next action three times. Maybe it skipped the proof. Maybe it never used the scaffold named in the work packet.&lt;/p&gt;
+&lt;p&gt;The change may still pass.&lt;/p&gt;
+&lt;p&gt;That doesn&#39;t mean the workflow was good.&lt;/p&gt;
+&lt;p&gt;Agent performance is how the run moved through the work, not just the final output.&lt;/p&gt;
+&lt;p&gt;If the path was noisy, that noise is product feedback.&lt;/p&gt;
+&lt;p&gt;It may mean the packet was too broad. It may mean the next command was unclear. It may mean the docs hid the real workflow. It may mean the harness surfaced proof too late. It may mean the model did fine, but the operating surface wasn&#39;t decisive enough.&lt;/p&gt;
+&lt;p&gt;Trace gives that review somewhere to happen.&lt;/p&gt;
+&lt;h2 id=&quot;trace-is-an-audit-surface&quot;&gt;Trace is an audit surface&lt;/h2&gt;
+&lt;p&gt;Trace reads a completed run and asks what actually happened.&lt;/p&gt;
+&lt;p&gt;It can look at run manifests, usage logs, tool results, model calls, proof outcomes, and transcripts when they exist. With an audit bundle, it can compare the observed run against the workflow context the agent was expected to use.&lt;/p&gt;
+&lt;p&gt;The command shape is intentionally direct:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;topogram trace analyze &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;run-dir&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; --audit-bundle &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;bundle-dir&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;--json&lt;/span&gt;
+topogram trace report &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;run-dir&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; --audit-bundle &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;bundle-dir&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;--format&lt;/span&gt; markdown
+topogram trace compare &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;run-a&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;run-b&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;--json&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The input can come from any run that matters enough to inspect.&lt;/p&gt;
+&lt;p&gt;We want an inspectable run, not a perfect judge.&lt;/p&gt;
+&lt;p&gt;An audit should answer practical questions:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;What did the agent actually read?&lt;/li&gt;
+&lt;li&gt;Which tools did it call?&lt;/li&gt;
+&lt;li&gt;How many model calls and tokens did it use?&lt;/li&gt;
+&lt;li&gt;Did it follow the expected workflow?&lt;/li&gt;
+&lt;li&gt;Did it run proof?&lt;/li&gt;
+&lt;li&gt;Where did it spend extra attention?&lt;/li&gt;
+&lt;li&gt;What would make the next run cleaner?&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;That moves review from vibes to evidence.&lt;/p&gt;
+&lt;h2 id=&quot;token-usage-was-the-first-clue&quot;&gt;Token usage was the first clue&lt;/h2&gt;
+&lt;p&gt;One reason I started using trace was practical: token usage is visible.&lt;/p&gt;
+&lt;p&gt;When an agent run uses far more context than expected, something usually happened. Maybe the packet was too vague. Maybe the agent searched broadly because the target wasn&#39;t clear. Maybe the docs pointed at the right concept but not the right file. Maybe the agent repeated the same command state because the next action wasn&#39;t decisive.&lt;/p&gt;
+&lt;p&gt;Token totals don&#39;t tell the whole story, but they&#39;re a useful smoke alarm.&lt;/p&gt;
+&lt;p&gt;The real value isn&#39;t this run used fewer tokens. A cheap run can skip proof. A costly run can produce durable learning.&lt;/p&gt;
+&lt;p&gt;The useful question is whether the tokens were spent on relevant context or on avoidable wandering.&lt;/p&gt;
+&lt;p&gt;Trace pairs usage with path evidence. It can show model calls, observed tools, files read, proof outcomes, and packet estimates together.&lt;/p&gt;
+&lt;p&gt;The team can see whether a token spike came from necessary work, weak guidance, or missing structure.&lt;/p&gt;
+&lt;p&gt;That makes token usage less like a scoreboard and more like a diagnostic.&lt;/p&gt;
+&lt;h2 id=&quot;smells-are-product-feedback&quot;&gt;Smells are product feedback&lt;/h2&gt;
+&lt;p&gt;Trace reports attention smells. They&#39;re not hard failures by default, but they flag the need for further review.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;A large actual-vs-packet token delta may mean the packet didn&#39;t localize the work.&lt;/li&gt;
+&lt;li&gt;Repeated next-action states may mean the next step wasn&#39;t decisive enough.&lt;/li&gt;
+&lt;li&gt;Excessive file reads may mean edit targets were too broad.&lt;/li&gt;
+&lt;li&gt;Skipped proof may mean the result is weaker than it looks.&lt;/li&gt;
+&lt;li&gt;Expected scaffold that wasn&#39;t used may mean generator status or harness gating needs review.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;None of that automatically means the run was bad.&lt;/p&gt;
+&lt;p&gt;It means the run is telling us something.&lt;/p&gt;
+&lt;p&gt;If every smell becomes a gate, trace becomes another brittle compliance tool. If every smell is ignored, trace becomes decorative logging.&lt;/p&gt;
+&lt;p&gt;The useful middle is audit.&lt;/p&gt;
+&lt;p&gt;Ask what the smell says about the system. Then decide whether it should become a packet improvement, generator improvement, docs improvement, harness fix, or backlog note.&lt;/p&gt;
+&lt;h2 id=&quot;after-action-record&quot;&gt;After-action record&lt;/h2&gt;
+&lt;p&gt;The after-action record is the most important part.&lt;/p&gt;
+&lt;p&gt;After a meaningful agent run, the team should be able to answer a few basic questions without reconstructing the whole session from memory:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;What context did the agent receive?&lt;/li&gt;
+&lt;li&gt;What context did it actually use?&lt;/li&gt;
+&lt;li&gt;Which files did it inspect?&lt;/li&gt;
+&lt;li&gt;Which tools did it call?&lt;/li&gt;
+&lt;li&gt;Which proof did it run?&lt;/li&gt;
+&lt;li&gt;Where did it spend attention that the packet should have avoided?&lt;/li&gt;
+&lt;li&gt;What should change before the next run?&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;That&#39;s a different posture from the diff looks fine.&lt;/p&gt;
+&lt;p&gt;The diff is the artifact. The trace is the path evidence.&lt;/p&gt;
+&lt;p&gt;Agent work creates a new review problem. The human may not have watched every step. The agent may have made reasonable choices for bad reasons. The tests may pass while the run still shows weak context, missing proof, or unclear ownership.&lt;/p&gt;
+&lt;p&gt;Trace gives the team a place to inspect that path.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;If the run failed, ask whether the map, packet, scaffold, docs, or proof surface made failure more likely.&lt;/li&gt;
+&lt;li&gt;If the run passed, ask whether it passed with clean attention or got lucky.&lt;/li&gt;
+&lt;li&gt;If proof was absent, treat the result as weaker evidence.&lt;/li&gt;
+&lt;li&gt;If the agent had to read widely, ask whether the packet localized the work well enough.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The goal is to make the next run more explainable.&lt;/p&gt;
+&lt;h2 id=&quot;auditing-makes-claims-safer&quot;&gt;Auditing makes claims safer&lt;/h2&gt;
+&lt;p&gt;I&#39;ve been making a structural claim in my agent tooling work: agents can work better when they receive bounded context, ownership, contracts, and proof before editing.&lt;/p&gt;
+&lt;p&gt;That claim needs evidence.&lt;/p&gt;
+&lt;p&gt;Not just screenshots. Not just polished demos. Not just final diffs.&lt;/p&gt;
+&lt;p&gt;It needs auditable runs that show what the agent was expected to do, what it actually did, where it spent attention, what proof it ran, and what the team changed after learning from the result.&lt;/p&gt;
+&lt;p&gt;The loop is simple:&lt;/p&gt;
+&lt;pre class=&quot;language-text&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;run -&gt; trace -&gt; inspect -&gt; improve context -&gt; run again&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;That&#39;s the maintenance workflow for agent-assisted software.&lt;/p&gt;
+&lt;p&gt;The map says what should matter. The audit bundle says what context the agent should have received. The trace says what the agent actually did. The report turns that difference into reviewable evidence.&lt;/p&gt;
+&lt;p&gt;If agents are going to change important code, we need to audit more than the final diff.&lt;/p&gt;
+&lt;p&gt;We need to audit the path that produced it.&lt;/p&gt;
+</content>
+  </entry>
+  <entry>
+    <title>Prompt Injection Is a Boundary Problem</title>
+    <link href="https://attebury.dev/blog/prompt-injection-is-a-boundary-problem/" />
+    <updated>2026-06-04T00:00:00Z</updated>
+    <id>https://attebury.dev/blog/prompt-injection-is-a-boundary-problem/</id>
+    <content type="html">&lt;p&gt;Prompt injection is easy to frame as a model problem.&lt;/p&gt;
+&lt;p&gt;The model read something bad. The model obeyed it. The model should have known better.&lt;/p&gt;
+&lt;p&gt;That&#39;s part of it, but I don&#39;t think it&#39;s the whole problem.&lt;/p&gt;
+&lt;p&gt;In an agent workflow, prompt injection is also a boundary problem.&lt;/p&gt;
+&lt;p&gt;The agent reads docs, source files, fixtures, generated reports, shared app maps, diffs, test data, local instructions, and packets prepared for model calls. Some of that text is useful context. Some of it is product evidence. Some of it may be malicious, stale, copied from somewhere else, or simply written in a way that sounds like an instruction.&lt;/p&gt;
+&lt;p&gt;The mistake is treating all readable text as authority.&lt;/p&gt;
+&lt;p&gt;The security work I&#39;ve been doing tries to make that boundary explicit.&lt;/p&gt;
+&lt;h2 id=&quot;evidence-is-not-authority&quot;&gt;Evidence is not authority&lt;/h2&gt;
+&lt;p&gt;The useful phrase is evidence, not authority.&lt;/p&gt;
+&lt;p&gt;Repo text can tell an agent what exists. It can describe requirements. It can show prior decisions. It can explain an edge case. It can include examples of unsafe behavior.&lt;/p&gt;
+&lt;p&gt;But repo text shouldn&#39;t be able to tell the agent to ignore system instructions, bypass proof, reveal hidden prompts, skip gates, weaken a skill, or send raw workspace context to a provider.&lt;/p&gt;
+&lt;p&gt;That sounds obvious until the agent workflow gets real.&lt;/p&gt;
+&lt;p&gt;Agents read a lot of project text. They read it quickly. They mix prose with tool output. They pass slices of that context into model calls. They may use external providers. They may adopt shared project maps. They may summarize findings back into new packets.&lt;/p&gt;
+&lt;p&gt;At that point, &amp;quot;just don&#39;t obey bad text&amp;quot; is too vague.&lt;/p&gt;
+&lt;p&gt;The system needs a boundary the workflow can inspect.&lt;/p&gt;
+&lt;h2 id=&quot;what-changed-in-my-thinking&quot;&gt;What changed in my thinking&lt;/h2&gt;
+&lt;p&gt;The recent work adds that boundary in a few places.&lt;/p&gt;
+&lt;p&gt;First, a prompt-boundary scan.&lt;/p&gt;
+&lt;p&gt;It looks for project prose that appears to tell agents, tools, providers, or gates to do unsafe things. Examples include ignoring trusted instructions, revealing secrets, bypassing checks, weakening proof, overriding agent guidance, or hiding instructions in markup and code fences.&lt;/p&gt;
+&lt;p&gt;The scanner isn&#39;t pretending to be perfect.&lt;/p&gt;
+&lt;p&gt;It&#39;s a practical tripwire.&lt;/p&gt;
+&lt;p&gt;High-confidence cases block. Advisory cases stay visible. Security discussions and examples can remain as evidence. If a finding is intentionally present, the waiver has to be command-owned, tied to a task or bug, tied to an actor, and hash-bound to the exact finding.&lt;/p&gt;
+&lt;p&gt;That last part matters.&lt;/p&gt;
+&lt;p&gt;A waiver shouldn&#39;t become a blanket permission slip. If the source text changes, the waiver goes stale.&lt;/p&gt;
+&lt;h2 id=&quot;the-inventory-matters&quot;&gt;The inventory matters&lt;/h2&gt;
+&lt;p&gt;An inventory of agent-facing prose surfaces sounds less exciting than a scanner, but it may be the more important piece.&lt;/p&gt;
+&lt;p&gt;You can&#39;t protect a boundary you haven&#39;t named.&lt;/p&gt;
+&lt;p&gt;The inventory says which commands and packets are model-visible. Some packets are agent-bound. They go to the coding agent as working context. Some packets are provider-bound. They leave the local workflow for a model provider.&lt;/p&gt;
+&lt;p&gt;Both need labels.&lt;/p&gt;
+&lt;p&gt;The inventory tracks whether JSON packets carry content trust, whether markdown output labels project-derived prose as untrusted evidence, and whether the surface has focused tests.&lt;/p&gt;
+&lt;p&gt;That creates a ratchet.&lt;/p&gt;
+&lt;p&gt;If a change adds or modifies an agent-facing surface, the workflow can ask whether the surface is registered, labeled, scanned, and tested.&lt;/p&gt;
+&lt;p&gt;This is the right kind of boring security.&lt;/p&gt;
+&lt;p&gt;Not &amp;quot;we hope the agent behaves.&amp;quot; Not &amp;quot;we trust everyone to remember.&amp;quot; A named surface has a named owner, named output formats, trust metadata, and proof.&lt;/p&gt;
+&lt;h2 id=&quot;provider-bound-packets-need-the-same-line&quot;&gt;Provider-bound packets need the same line&lt;/h2&gt;
+&lt;p&gt;The provider boundary is where this gets more concrete.&lt;/p&gt;
+&lt;p&gt;Provider input is the packet the workflow allows out to an external model provider. It&#39;s the model-bound payload.&lt;/p&gt;
+&lt;p&gt;That payload shouldn&#39;t contain raw workspace context by accident. Local paths, secret-like values, hidden checks, git remotes, raw source fields, and unallowlisted output should stay out of provider-bound packets.&lt;/p&gt;
+&lt;p&gt;Provider input should be its own trust surface.&lt;/p&gt;
+&lt;p&gt;The packet carries content trust. The payload is scanned. The redaction report is auditable. If the audit fails, the payload is rejected instead of being sent anyway.&lt;/p&gt;
+&lt;p&gt;That&#39;s the right shape.&lt;/p&gt;
+&lt;p&gt;The boundary isn&#39;t only what did the agent read?&lt;/p&gt;
+&lt;p&gt;It&#39;s also what did the system send onward?&lt;/p&gt;
+&lt;h2 id=&quot;shared-maps-are-still-untrusted-until-reviewed&quot;&gt;Shared maps are still untrusted until reviewed&lt;/h2&gt;
+&lt;p&gt;Shared app maps are useful because teams want reusable records: terms, capabilities, workflows, rules, patterns, reference structures.&lt;/p&gt;
+&lt;p&gt;But shared doesn&#39;t mean trusted.&lt;/p&gt;
+&lt;p&gt;A shared map may come from another repo, another team, another version, or another context. It might be useful. It might also contain unsafe prose, authority files, or colliding records.&lt;/p&gt;
+&lt;p&gt;Shared map text should be a separate trust class.&lt;/p&gt;
+&lt;p&gt;The workflow can review a source, require a pinned hash, scan the imported records, block authority files, and write an adoption receipt. That keeps shared context from silently becoming project authority.&lt;/p&gt;
+&lt;p&gt;You can make context portable without making trust portable.&lt;/p&gt;
+&lt;h2 id=&quot;the-useful-standard&quot;&gt;The useful standard&lt;/h2&gt;
+&lt;p&gt;The goal isn&#39;t to make prompt injection impossible.&lt;/p&gt;
+&lt;p&gt;That would be too broad a claim.&lt;/p&gt;
+&lt;p&gt;The useful standard is smaller and stronger:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Agent-visible prose should be inventoried.&lt;/li&gt;
+&lt;li&gt;Project-derived text should be treated as evidence, not authority.&lt;/li&gt;
+&lt;li&gt;Unsafe authority-shaped text should be scanned.&lt;/li&gt;
+&lt;li&gt;External provider payloads should be sanitized and auditable.&lt;/li&gt;
+&lt;li&gt;Shared maps should be pinned and reviewed before adoption.&lt;/li&gt;
+&lt;li&gt;Waivers should be exact, reviewed, and stale when the source changes.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Model the app. Bound the context. Label the trust. Scan the prose. Audit the packet. Keep exceptions narrow.&lt;/p&gt;
+&lt;p&gt;Prompt injection isn&#39;t only about bad text.&lt;/p&gt;
+&lt;p&gt;It&#39;s about whether the workflow can tell the difference between context that helps the agent and text that&#39;s trying to steer it.&lt;/p&gt;
+</content>
+  </entry>
+  <entry>
+    <title>One Graph, Many Native Surfaces</title>
+    <link href="https://attebury.dev/blog/one-graph-many-native-surfaces/" />
+    <updated>2026-05-30T00:00:00Z</updated>
+    <id>https://attebury.dev/blog/one-graph-many-native-surfaces/</id>
+    <content type="html">&lt;p&gt;Cross-platform frameworks have always chased a hard promise: build once, reach many platforms.&lt;/p&gt;
+&lt;p&gt;Frameworks like .NET MAUI, Flutter, React Native, and earlier hybrid stacks try to reduce the cost of shipping web, iOS, Android, and desktop apps. They package platform differences behind shared code, shared components, or shared runtime layers.&lt;/p&gt;
+&lt;p&gt;That has real value.&lt;/p&gt;
+&lt;p&gt;But AI may change the thing we most need to share.&lt;/p&gt;
+&lt;p&gt;If agents can produce more of the implementation, the most valuable shared asset may not be one UI framework.&lt;/p&gt;
+&lt;p&gt;It may be one product graph.&lt;/p&gt;
+&lt;h2 id=&quot;shared-code-is-not-shared-intent&quot;&gt;Shared code is not shared intent&lt;/h2&gt;
+&lt;p&gt;Shared code solves a real problem. It reduces duplication. It keeps business logic from being rewritten four times. It can help a company ship a mobile app without building separate native teams from scratch.&lt;/p&gt;
+&lt;p&gt;But shared code also creates pressure.&lt;/p&gt;
+&lt;p&gt;The app may feel less native. Navigation may get awkward. Accessibility, gestures, offline behavior, and performance may not line up cleanly across targets. The team can spend as much time working around the abstraction as using it.&lt;/p&gt;
+&lt;p&gt;That doesn&#39;t mean cross-platform frameworks are wrong.&lt;/p&gt;
+&lt;p&gt;It means shared code is not shared product intent.&lt;/p&gt;
+&lt;p&gt;The better question is: what should actually be shared?&lt;/p&gt;
+&lt;h2 id=&quot;the-shared-layer-may-move-up&quot;&gt;The shared layer may move up&lt;/h2&gt;
+&lt;p&gt;The useful shared layer may move above the UI framework.&lt;/p&gt;
+&lt;p&gt;Instead of asking one framework to make every platform feel right, teams may ask one graph to describe what should stay true.&lt;/p&gt;
+&lt;p&gt;The graph should answer:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Which capabilities exist.&lt;/li&gt;
+&lt;li&gt;Which entities and workflows matter.&lt;/li&gt;
+&lt;li&gt;Which surfaces users need.&lt;/li&gt;
+&lt;li&gt;Which widgets and states belong on each surface.&lt;/li&gt;
+&lt;li&gt;Which rules constrain behavior.&lt;/li&gt;
+&lt;li&gt;Which accessibility and localization promises apply.&lt;/li&gt;
+&lt;li&gt;Which proof says the experience works.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;From there, agents or generators could produce different native outputs.&lt;/p&gt;
+&lt;p&gt;The web app could use web-native patterns. The iOS app could use iOS-native navigation and controls. The Android app could use Android-native conventions. The desktop app could use desktop affordances.&lt;/p&gt;
+&lt;p&gt;The shared layer wouldn&#39;t be a lowest-common-denominator UI. It would be the product map.&lt;/p&gt;
+&lt;h2 id=&quot;agents-may-work-better-natively&quot;&gt;Agents may work better natively&lt;/h2&gt;
+&lt;p&gt;An agent working on an iOS app may be more effective in a native iOS environment than inside a generic cross-platform abstraction. The compiler, simulator, platform APIs, accessibility tools, and design conventions all give the agent stronger feedback.&lt;/p&gt;
+&lt;p&gt;The same may be true on Android, desktop, and web.&lt;/p&gt;
+&lt;p&gt;The agent doesn&#39;t have to guess whether a custom abstraction maps cleanly to the platform. It can work with the platform directly. It can run platform-specific tests. It can inspect native warnings. It can use native components the way a human specialist would.&lt;/p&gt;
+&lt;p&gt;But that only works if the agent has a shared source of intent.&lt;/p&gt;
+&lt;p&gt;Without one, every native surface becomes its own interpretation of the product. The iOS app drifts. The web app drifts. The Android app drifts. Desktop becomes the odd surface nobody quite trusts.&lt;/p&gt;
+&lt;p&gt;Native output is powerful only if we can keep the product coherent.&lt;/p&gt;
+&lt;h2 id=&quot;one-graph-many-native-surfaces&quot;&gt;One graph, many native surfaces&lt;/h2&gt;
+&lt;p&gt;The possible shape is one graph, many native surfaces.&lt;/p&gt;
+&lt;p&gt;The graph describes the product. Each surface implements that product in the right platform language.&lt;/p&gt;
+&lt;p&gt;That could mean:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;One capability appears on web, iOS, Android, and desktop.&lt;/li&gt;
+&lt;li&gt;Each platform gets native layout, navigation, and interaction patterns.&lt;/li&gt;
+&lt;li&gt;Shared rules define behavior, not pixels.&lt;/li&gt;
+&lt;li&gt;Surface records describe what each platform owes the user.&lt;/li&gt;
+&lt;li&gt;Agents generate or maintain platform-specific code from the same intent.&lt;/li&gt;
+&lt;li&gt;Reviewers compare each output against the graph and proof.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;This isn&#39;t write once, run everywhere.&lt;/p&gt;
+&lt;p&gt;It&#39;s closer to spec once, realize everywhere.&lt;/p&gt;
+&lt;p&gt;The implementation can differ. The product contract should not.&lt;/p&gt;
+&lt;h2 id=&quot;what-happens-to-net-maui&quot;&gt;What happens to .NET MAUI&lt;/h2&gt;
+&lt;p&gt;This isn&#39;t an argument that .NET MAUI goes away.&lt;/p&gt;
+&lt;p&gt;Frameworks like .NET MAUI solve real problems. Some teams want a unified codebase. Some apps are similar enough across platforms that one framework is the right tradeoff. Some organizations would rather accept platform compromises than staff multiple native surfaces.&lt;/p&gt;
+&lt;p&gt;AI doesn&#39;t erase that.&lt;/p&gt;
+&lt;p&gt;But it may create another path.&lt;/p&gt;
+&lt;p&gt;A team may not need one cross-platform UI layer for every target if agents can help maintain several native targets from the same product graph.&lt;/p&gt;
+&lt;p&gt;That changes the tradeoff.&lt;/p&gt;
+&lt;p&gt;The question may stop being: which framework lets us share the most code?&lt;/p&gt;
+&lt;p&gt;It may become: which shared graph lets us keep the most product coherence while each platform stays native?&lt;/p&gt;
+&lt;h2 id=&quot;a-possible-shape&quot;&gt;A possible shape&lt;/h2&gt;
+&lt;p&gt;If AI keeps lowering the cost of implementation, cross-platform development may become less about one runtime and more about one coordinated source of truth.&lt;/p&gt;
+&lt;p&gt;Some teams will still use frameworks like .NET MAUI because shared code is the right constraint. Others may choose native surfaces because agents can carry more of the implementation load.&lt;/p&gt;
+&lt;p&gt;In that world, the valuable asset isn&#39;t just the app code. It&#39;s the graph that tells every surface what should stay true.&lt;/p&gt;
+&lt;p&gt;The future may not be one app that runs everywhere.&lt;/p&gt;
+&lt;p&gt;It may be one product map that helps every surface feel like it belongs.&lt;/p&gt;
+</content>
+  </entry>
+  <entry>
+    <title>Feature Waves, Not Big Releases</title>
+    <link href="https://attebury.dev/blog/feature-waves-not-big-releases/" />
+    <updated>2026-05-29T00:00:00Z</updated>
+    <id>https://attebury.dev/blog/feature-waves-not-big-releases/</id>
+    <content type="html">&lt;p&gt;If software work keeps compressing, release planning may change too.&lt;/p&gt;
+&lt;p&gt;The old pattern is familiar. A company plans a release. The release collects features, fixes, migrations, compliance work, and cleanup. Some of that work belongs together. Much of it doesn&#39;t. It ships together because the process, calendar, or staffing model needs a bundle.&lt;/p&gt;
+&lt;p&gt;AI may weaken that bundle.&lt;/p&gt;
+&lt;p&gt;Not because planning disappears. Not because releases disappear everywhere. But because the useful unit of coordination may become smaller, more coherent, and more fluid.&lt;/p&gt;
+&lt;p&gt;The memorable shape is feature waves.&lt;/p&gt;
+&lt;h2 id=&quot;the-bundle-starts-to-break&quot;&gt;The bundle starts to break&lt;/h2&gt;
+&lt;p&gt;Big releases often mix unrelated work because teams are organized around scarce stack capacity. One team owns the front end. Another owns the API. Another owns data. Another owns infrastructure. A feature crosses those stacks, waits for availability, collects dependencies, and eventually joins a release train.&lt;/p&gt;
+&lt;p&gt;That made sense when the stack boundary was also the people boundary.&lt;/p&gt;
+&lt;p&gt;If AI lowers the cost of crossing stack boundaries, that boundary may matter less. A product owner may not need to wait for a Python specialist to make a small API change. A designer may not need a dedicated front-end engineer for every component state. A developer may not need hours of repo reading before touching unfamiliar code.&lt;/p&gt;
+&lt;p&gt;That doesn&#39;t make the work easy. It moves the coordination problem.&lt;/p&gt;
+&lt;p&gt;The hard question may shift from who knows this stack to who understands this wave.&lt;/p&gt;
+&lt;h2 id=&quot;a-wave-is-a-coherent-change&quot;&gt;A wave is a coherent change&lt;/h2&gt;
+&lt;p&gt;A feature wave isn&#39;t just an epic with a better name. It&#39;s a coordinated slice of product intent, system change, and proof.&lt;/p&gt;
+&lt;p&gt;It might include:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;A product need or customer problem.&lt;/li&gt;
+&lt;li&gt;The workflows and screens affected.&lt;/li&gt;
+&lt;li&gt;The capabilities, data, and rules that have to change.&lt;/li&gt;
+&lt;li&gt;The tests, proof, and review criteria that define done.&lt;/li&gt;
+&lt;li&gt;The people taking temporary responsibility for product judgment, code, design, and verification.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The wave is organized around what should become true, not which team owns which layer.&lt;/p&gt;
+&lt;p&gt;That makes it feel related to continuous deployment, but at the level of product change. Continuous deployment made it normal to push small code changes quickly. Feature waves may make it normal to push small coherent product changes quickly.&lt;/p&gt;
+&lt;h2 id=&quot;roles-may-rotate-around-the-wave&quot;&gt;Roles may rotate around the wave&lt;/h2&gt;
+&lt;p&gt;If this happens, teams may organize less around permanent stack ownership and more around temporary responsibility.&lt;/p&gt;
+&lt;p&gt;For one wave, the strongest Python developer may lead the code path. Someone else may act as product owner and reviewer. A designer may own the user experience and acceptance criteria. An agent may do the mechanical implementation after the team names the boundaries.&lt;/p&gt;
+&lt;p&gt;For the next wave, those roles may change.&lt;/p&gt;
+&lt;p&gt;The person who reviewed the Python change may lead implementation for a TypeScript feature because they know that product surface best. The strongest engineer may step back from coding and focus on proof because the riskiest part of the wave is behavior, not syntax. A domain expert may drive the requirement while an agent handles scaffolding and tests.&lt;/p&gt;
+&lt;p&gt;The team becomes less like a static org chart and more like a small group forming around the shape of the work.&lt;/p&gt;
+&lt;p&gt;If AI makes unfamiliar stacks less costly to work in, experience may matter differently. Deep technical judgment still matters. But the most useful person for a wave may be the person who understands the need, the boundary, or the proof best.&lt;/p&gt;
+&lt;h2 id=&quot;fluid-work-needs-stronger-memory&quot;&gt;Fluid work needs stronger memory&lt;/h2&gt;
+&lt;p&gt;This is where the speculation gets uncomfortable.&lt;/p&gt;
+&lt;p&gt;If work gets more fluid, coordination has to get better. Otherwise the team just moves faster into confusion.&lt;/p&gt;
+&lt;p&gt;The old system had friction, but some of that friction was useful. Stack ownership created memory. Release gates forced review. Specialists knew where the sharp edges were. Slow handoffs made people explain what they were doing.&lt;/p&gt;
+&lt;p&gt;AI can remove some of that friction. It can also remove some of that memory.&lt;/p&gt;
+&lt;p&gt;So the team needs another way to preserve structure:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;What wave is this change part of?&lt;/li&gt;
+&lt;li&gt;What product need justifies it?&lt;/li&gt;
+&lt;li&gt;Which surfaces, workflows, entities, and rules are affected?&lt;/li&gt;
+&lt;li&gt;Who is acting as product owner, implementer, designer, and reviewer?&lt;/li&gt;
+&lt;li&gt;What proof says the wave is done?&lt;/li&gt;
+&lt;li&gt;What should not change?&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Those questions become more important when roles are fluid. You can&#39;t answer them only in chat and expect the answers to survive the next wave.&lt;/p&gt;
+&lt;h2 id=&quot;a-possible-shape&quot;&gt;A possible shape&lt;/h2&gt;
+&lt;p&gt;AI-assisted teams may not move from big releases straight to chaos. They may move toward smaller coordinated waves.&lt;/p&gt;
+&lt;p&gt;One wave improves onboarding. Another changes billing. Another cleans up permission boundaries. Another updates a design system pattern across a few surfaces. Each wave has product intent, affected scope, owners, and proof. Each can move quickly because it doesn&#39;t wait for a large unrelated bundle.&lt;/p&gt;
+&lt;p&gt;That future isn&#39;t guaranteed. Some domains need formal releases. Some teams will keep stack ownership because the cost of mistakes is high. Some work will always require deep specialist experience.&lt;/p&gt;
+&lt;p&gt;But if software work keeps compressing, the team may stop asking, &amp;quot;Which stack team owns this?&amp;quot;&lt;/p&gt;
+&lt;p&gt;It may start asking, &amp;quot;What wave are we in, who is strongest for this part, and what proof makes the change true?&amp;quot;&lt;/p&gt;
+</content>
+  </entry>
+  <entry>
+    <title>When Software Work Gets Shopified</title>
+    <link href="https://attebury.dev/blog/when-software-work-gets-shopified/" />
+    <updated>2026-05-28T00:00:00Z</updated>
+    <id>https://attebury.dev/blog/when-software-work-gets-shopified/</id>
+    <content type="html">&lt;p&gt;AI can feel like a break from software history, but I think it&#39;s more useful to see it as a continuation.&lt;/p&gt;
+&lt;p&gt;We&#39;ve been compressing roles for decades. We used to pay one person to design a website, another to code it, another to wire forms, another to publish content, and another to keep the stack running. Then blogs, CMS tools, hosted site builders, and services like Shopify absorbed large parts of that work.&lt;/p&gt;
+&lt;p&gt;The work didn&#39;t disappear. It moved into platforms.&lt;/p&gt;
+&lt;p&gt;Design became themes and systems. Content publishing became an editor. Commerce became a configured service. Hosting became a deploy button. A single operator could do work that once required a small web team.&lt;/p&gt;
+&lt;p&gt;AI may do something similar to software development.&lt;/p&gt;
+&lt;h2 id=&quot;role-compression-is-the-pattern&quot;&gt;Role compression is the pattern&lt;/h2&gt;
+&lt;p&gt;The important pattern isn&#39;t replacement. It&#39;s compression.&lt;/p&gt;
+&lt;p&gt;When platforms mature, they package repeated work into defaults, workflows, and constraints. The old specialist work becomes a product surface. A smaller team can operate at a higher level.&lt;/p&gt;
+&lt;p&gt;That&#39;s what happened to many websites. The average business no longer needs a dedicated designer, front-end developer, back-end developer, hosting operator, and analytics consultant just to sell products online. Shopify compressed much of that into a service.&lt;/p&gt;
+&lt;p&gt;AI can compress software work in a similar way:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Scaffolding becomes a prompt or template.&lt;/li&gt;
+&lt;li&gt;Boilerplate implementation becomes generated code.&lt;/li&gt;
+&lt;li&gt;Refactoring becomes an agent task.&lt;/li&gt;
+&lt;li&gt;Test creation becomes a guided loop.&lt;/li&gt;
+&lt;li&gt;Documentation updates become part of the change.&lt;/li&gt;
+&lt;li&gt;Design translation becomes a conversation with constraints.&lt;/li&gt;
+&lt;li&gt;Investigation becomes a context query instead of hours of repo reading.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;If that&#39;s accurate, entire areas of software development will get platformed. Not all of software, and not all of engineering judgment. But many repeated slices of implementation, maintenance, migration, and glue work will get absorbed into tools and workflows we haven&#39;t fully named yet.&lt;/p&gt;
+&lt;h2 id=&quot;what-teams-might-look-like&quot;&gt;What teams might look like&lt;/h2&gt;
+&lt;p&gt;Smaller teams may cover more surface area.&lt;/p&gt;
+&lt;p&gt;One person may own product shape, user experience, and implementation for a bounded feature. Another may own platform rules, security posture, release quality, and proof. A designer may work directly with generated components and semantic UI contracts. A domain expert may author workflows and acceptance criteria that agents turn into code.&lt;/p&gt;
+&lt;p&gt;The team becomes less like a row of specialists passing tickets downstream and more like a small group of operators coordinating systems.&lt;/p&gt;
+&lt;p&gt;That doesn&#39;t make engineering easier. It changes where the difficulty lives.&lt;/p&gt;
+&lt;p&gt;The hard parts move from reading requirements and typing code to choosing intent, setting boundaries, reviewing generated work, proving behavior, and keeping the system coherent through time.&lt;/p&gt;
+&lt;p&gt;In that world, the riskiest gap isn&#39;t whether an agent can produce code. The risk is whether the agent is changing the right thing for the right reason, in the right part of the system, with the right proof.&lt;/p&gt;
+&lt;h2 id=&quot;where-ai-needs-structure&quot;&gt;Where AI needs structure&lt;/h2&gt;
+&lt;p&gt;AI coding tools are good at local transformation. They edit files, write tests, explain code, and propose refactors. They&#39;re less reliable when the work depends on product intent, ownership, unstated decisions, or system boundaries.&lt;/p&gt;
+&lt;p&gt;That&#39;s where role compression gets messy.&lt;/p&gt;
+&lt;p&gt;If one person uses AI to do the work of several roles, that person needs more than a faster editor. They need a way to keep the compressed roles from blending together into guesses.&lt;/p&gt;
+&lt;p&gt;The product decision shouldn&#39;t disappear into the implementation. The implementation shouldn&#39;t invent the contract. The contract shouldn&#39;t ignore proof. Proof shouldn&#39;t be an afterthought.&lt;/p&gt;
+&lt;p&gt;AI makes those separations more important, not less.&lt;/p&gt;
+&lt;h2 id=&quot;what-we-still-have-to-carry&quot;&gt;What we still have to carry&lt;/h2&gt;
+&lt;p&gt;I&#39;ve been building tools for agentic development partly because of this compression. When fewer people cover more roles, the team needs durable answers to boring questions:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;What should be true after this change?&lt;/li&gt;
+&lt;li&gt;Who owns this boundary?&lt;/li&gt;
+&lt;li&gt;What proof counts as done?&lt;/li&gt;
+&lt;li&gt;What context is safe to give an agent, and what is only evidence?&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;You can answer those in tickets, chat, and memory for a while. Then the team moves faster and the answers stop matching the code.&lt;/p&gt;
+&lt;p&gt;Compressed teams still need a map of what they&#39;re building. AI can help produce the code. We still have to know what should be true, who owns it, what rules apply, and how to prove the change is done.&lt;/p&gt;
+&lt;p&gt;That&#39;s not a product pitch. It&#39;s the problem I&#39;m working in.&lt;/p&gt;
+</content>
+  </entry>
 </feed>

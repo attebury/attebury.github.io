@@ -3,8 +3,8 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>SkillPress is open source</title>
-		<meta name="description" content="Announcing SkillPress, an open source package manager for agent guidance.">
+		<title>Trace Turns Agent Runs Into Audits</title>
+		<meta name="description" content="Completed agent runs should become evidence for trust, review, and improvement, not just a diff to skim.">
 		<link rel="alternate" href="/feed/feed.xml" type="application/atom+xml" title="Attebury">
 		
 		
@@ -499,33 +499,106 @@ pre[class*="language-diff-"] {
 				
 
 
-<h1 id="skillpress-is-open-source">SkillPress is open source</h1>
+<h1 id="trace-turns-agent-runs-into-audits">Trace Turns Agent Runs Into Audits</h1>
 
 <ul class="post-metadata">
-	<li><time datetime="2026-07-10">10 July 2026</time></li>
-	<li><a href="/tags/open-source/" class="post-tag">open-source</a>, </li>
+	<li><time datetime="2026-06-05">05 June 2026</time></li>
 	<li><a href="/tags/agentic-development/" class="post-tag">agentic-development</a>, </li>
-	<li><a href="/tags/tools/" class="post-tag">tools</a>, </li>
-	<li><a href="/tags/skillpress/" class="post-tag">skillpress</a></li>
+	<li><a href="/tags/field-notes/" class="post-tag">field-notes</a></li>
 </ul>
 
-<p>I'm open-sourcing <a href="https://github.com/attebury/skillpress">SkillPress</a>. I built it for the same reason I built ReleasePress: I had too many moving parts and not enough control over what was actually installed.</p>
-<p>Once you're developing more than one CLI tool with agent skills, the skills stop feeling like documentation and start feeling like dependencies. Runlane has skills. ReleasePress has skills. Remogram has skills. They live in the repo under <code>agent-skills/src</code>, scoped by tool, with contracts and policy rules wrapped around them. That's the canonical source.</p>
-<p>But agents don't read the repo. They read what's installed.</p>
-<p>Codex looks in <code>~/.codex/skills</code>. Cursor wants rules under <code>.cursor/rules/skillpress</code>. Claude Code has its own tree. Antigravity has another. Each surface wants a slightly different shape, and each one is easy to edit by hand when you're in a hurry. So we do. We patch the installed copy, tell ourselves we'll backport it later, and then we can't remember which machine has which version of which skill.</p>
-<p>That's not a workflow. That's drift with extra steps.</p>
-<p>SkillPress treats provider directories as install caches, not source. You edit skills in the repo. SkillPress syncs them to the right provider surface, records hashes in the installed header, and gives you commands to inspect what's stale before you trust it.</p>
-<pre class="language-bash" tabindex="0"><code class="language-bash">skillpress status <span class="token parameter variable">--json</span> <span class="token parameter variable">--config</span> skillpress.config.json
-skillpress doctor <span class="token parameter variable">--json</span> <span class="token parameter variable">--tool</span> runlane <span class="token parameter variable">--provider</span> codex
-skillpress <span class="token function">sync</span> <span class="token parameter variable">--json</span> <span class="token parameter variable">--config</span> skillpress.config.json <span class="token parameter variable">--provider</span> cursor <span class="token parameter variable">--tool</span> releasepress
-skillpress repair-plan <span class="token parameter variable">--json</span></code></pre>
-<p><code>status</code> tells you what's installed and where. <code>doctor</code> runs policy checks against the source tree: frontmatter shape, unsafe command patterns, interactive prompts that'll block CI, that kind of thing. <code>sync</code> pushes canonical skills into a provider target. <code>repair-plan</code> is read-only. It tells you what needs a resync without rewriting anything behind your back.</p>
-<p>SkillPress doesn't write the skills. It doesn't promote CLI binaries. It doesn't run lanes or decide merge authority. It owns one narrow job: get the right guidance onto the right surface, keep the install honest, and make drift visible before it becomes habit.</p>
-<p>If you're running multiple agent tools against the same product repo, you've probably already felt this. You fix a skill in source, open Cursor, and nothing changes because Cursor is still reading yesterday's cache. Or you fix it in the cache because it's faster, and the repo falls behind. SkillPress is built to keep that boundary clean.</p>
-<p>It's early. The policy packs are strict on purpose. The installed headers are there so you can see when a provider copy is lying to you.</p>
-<p>Source and docs: <a href="https://github.com/attebury/skillpress">github.com/attebury/skillpress</a></p>
+<p>Agent work is easy to watch and hard to audit.</p>
+<p>You can read the final diff, skim the transcript, count tokens, review tests. Those are useful signals, but they aren't enough.</p>
+<p>The useful question is sharper: did the run deserve trust?</p>
+<p>Trace turns a completed agent run into evidence that can be reviewed, compared, and improved.</p>
+<h2 id="the-diff-is-not-the-whole-run">The diff is not the whole run</h2>
+<p>A finished diff can look reasonable while hiding the cost of getting there.</p>
+<p>Maybe the agent read half the repo before finding the right file. Maybe it asked for the same next action three times. Maybe it skipped the proof. Maybe it never used the scaffold named in the work packet.</p>
+<p>The change may still pass.</p>
+<p>That doesn't mean the workflow was good.</p>
+<p>Agent performance is how the run moved through the work, not just the final output.</p>
+<p>If the path was noisy, that noise is product feedback.</p>
+<p>It may mean the packet was too broad. It may mean the next command was unclear. It may mean the docs hid the real workflow. It may mean the harness surfaced proof too late. It may mean the model did fine, but the operating surface wasn't decisive enough.</p>
+<p>Trace gives that review somewhere to happen.</p>
+<h2 id="trace-is-an-audit-surface">Trace is an audit surface</h2>
+<p>Trace reads a completed run and asks what actually happened.</p>
+<p>It can look at run manifests, usage logs, tool results, model calls, proof outcomes, and transcripts when they exist. With an audit bundle, it can compare the observed run against the workflow context the agent was expected to use.</p>
+<p>The command shape is intentionally direct:</p>
+<pre class="language-bash" tabindex="0"><code class="language-bash">topogram trace analyze <span class="token operator">&lt;</span>run-dir<span class="token operator">></span> --audit-bundle <span class="token operator">&lt;</span>bundle-dir<span class="token operator">></span> <span class="token parameter variable">--json</span>
+topogram trace report <span class="token operator">&lt;</span>run-dir<span class="token operator">></span> --audit-bundle <span class="token operator">&lt;</span>bundle-dir<span class="token operator">></span> <span class="token parameter variable">--format</span> markdown
+topogram trace compare <span class="token operator">&lt;</span>run-a<span class="token operator">></span> <span class="token operator">&lt;</span>run-b<span class="token operator">></span> <span class="token parameter variable">--json</span></code></pre>
+<p>The input can come from any run that matters enough to inspect.</p>
+<p>We want an inspectable run, not a perfect judge.</p>
+<p>An audit should answer practical questions:</p>
+<ul>
+<li>What did the agent actually read?</li>
+<li>Which tools did it call?</li>
+<li>How many model calls and tokens did it use?</li>
+<li>Did it follow the expected workflow?</li>
+<li>Did it run proof?</li>
+<li>Where did it spend extra attention?</li>
+<li>What would make the next run cleaner?</li>
+</ul>
+<p>That moves review from vibes to evidence.</p>
+<h2 id="token-usage-was-the-first-clue">Token usage was the first clue</h2>
+<p>One reason I started using trace was practical: token usage is visible.</p>
+<p>When an agent run uses far more context than expected, something usually happened. Maybe the packet was too vague. Maybe the agent searched broadly because the target wasn't clear. Maybe the docs pointed at the right concept but not the right file. Maybe the agent repeated the same command state because the next action wasn't decisive.</p>
+<p>Token totals don't tell the whole story, but they're a useful smoke alarm.</p>
+<p>The real value isn't this run used fewer tokens. A cheap run can skip proof. A costly run can produce durable learning.</p>
+<p>The useful question is whether the tokens were spent on relevant context or on avoidable wandering.</p>
+<p>Trace pairs usage with path evidence. It can show model calls, observed tools, files read, proof outcomes, and packet estimates together.</p>
+<p>The team can see whether a token spike came from necessary work, weak guidance, or missing structure.</p>
+<p>That makes token usage less like a scoreboard and more like a diagnostic.</p>
+<h2 id="smells-are-product-feedback">Smells are product feedback</h2>
+<p>Trace reports attention smells. They're not hard failures by default, but they flag the need for further review.</p>
+<ul>
+<li>A large actual-vs-packet token delta may mean the packet didn't localize the work.</li>
+<li>Repeated next-action states may mean the next step wasn't decisive enough.</li>
+<li>Excessive file reads may mean edit targets were too broad.</li>
+<li>Skipped proof may mean the result is weaker than it looks.</li>
+<li>Expected scaffold that wasn't used may mean generator status or harness gating needs review.</li>
+</ul>
+<p>None of that automatically means the run was bad.</p>
+<p>It means the run is telling us something.</p>
+<p>If every smell becomes a gate, trace becomes another brittle compliance tool. If every smell is ignored, trace becomes decorative logging.</p>
+<p>The useful middle is audit.</p>
+<p>Ask what the smell says about the system. Then decide whether it should become a packet improvement, generator improvement, docs improvement, harness fix, or backlog note.</p>
+<h2 id="after-action-record">After-action record</h2>
+<p>The after-action record is the most important part.</p>
+<p>After a meaningful agent run, the team should be able to answer a few basic questions without reconstructing the whole session from memory:</p>
+<ul>
+<li>What context did the agent receive?</li>
+<li>What context did it actually use?</li>
+<li>Which files did it inspect?</li>
+<li>Which tools did it call?</li>
+<li>Which proof did it run?</li>
+<li>Where did it spend attention that the packet should have avoided?</li>
+<li>What should change before the next run?</li>
+</ul>
+<p>That's a different posture from the diff looks fine.</p>
+<p>The diff is the artifact. The trace is the path evidence.</p>
+<p>Agent work creates a new review problem. The human may not have watched every step. The agent may have made reasonable choices for bad reasons. The tests may pass while the run still shows weak context, missing proof, or unclear ownership.</p>
+<p>Trace gives the team a place to inspect that path.</p>
+<ul>
+<li>If the run failed, ask whether the map, packet, scaffold, docs, or proof surface made failure more likely.</li>
+<li>If the run passed, ask whether it passed with clean attention or got lucky.</li>
+<li>If proof was absent, treat the result as weaker evidence.</li>
+<li>If the agent had to read widely, ask whether the packet localized the work well enough.</li>
+</ul>
+<p>The goal is to make the next run more explainable.</p>
+<h2 id="auditing-makes-claims-safer">Auditing makes claims safer</h2>
+<p>I've been making a structural claim in my agent tooling work: agents can work better when they receive bounded context, ownership, contracts, and proof before editing.</p>
+<p>That claim needs evidence.</p>
+<p>Not just screenshots. Not just polished demos. Not just final diffs.</p>
+<p>It needs auditable runs that show what the agent was expected to do, what it actually did, where it spent attention, what proof it ran, and what the team changed after learning from the result.</p>
+<p>The loop is simple:</p>
+<pre class="language-text" tabindex="0"><code class="language-text">run -> trace -> inspect -> improve context -> run again</code></pre>
+<p>That's the maintenance workflow for agent-assisted software.</p>
+<p>The map says what should matter. The audit bundle says what context the agent should have received. The trace says what the agent actually did. The report turns that difference into reviewable evidence.</p>
+<p>If agents are going to change important code, we need to audit more than the final diff.</p>
+<p>We need to audit the path that produced it.</p>
 
-<ul class="links-nextprev"><li class="links-nextprev-prev">← Previous<br> <a href="/blog/releasepress-open-source/">ReleasePress is open source</a></li><li class="links-nextprev-next">Next →<br><a href="/blog/remogram-open-source/">Remogram is open source</a></li>
+<ul class="links-nextprev"><li class="links-nextprev-prev">← Previous<br> <a href="/blog/prompt-injection-is-a-boundary-problem/">Prompt Injection Is a Boundary Problem</a></li><li class="links-nextprev-next">Next →<br><a href="/blog/releasepress-open-source/">ReleasePress is open source</a></li>
 </ul>
 
 			</heading-anchors>
@@ -535,7 +608,7 @@ skillpress repair-plan <span class="token parameter variable">--json</span></cod
 			<p>&copy; 2026 Attebury</p>
 		</footer>
 
-		<!-- This page `/blog/skillpress-open-source/` was built on 2026-07-09T22:20:22.043Z -->
+		<!-- This page `/blog/trace-turns-agent-runs-into-audits/` was built on 2026-07-09T22:20:22.043Z -->
 		<script type="module" src="/dist/cC8wS6ZjFU.js"></script>
 	</body>
 </html>

@@ -3,8 +3,8 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>SkillPress is open source</title>
-		<meta name="description" content="Announcing SkillPress, an open source package manager for agent guidance.">
+		<title>Prompt Injection Is a Boundary Problem</title>
+		<meta name="description" content="In agent workflows, project text, shared maps, and model-bound packets are evidence, not authority.">
 		<link rel="alternate" href="/feed/feed.xml" type="application/atom+xml" title="Attebury">
 		
 		
@@ -499,33 +499,82 @@ pre[class*="language-diff-"] {
 				
 
 
-<h1 id="skillpress-is-open-source">SkillPress is open source</h1>
+<h1 id="prompt-injection-is-a-boundary-problem">Prompt Injection Is a Boundary Problem</h1>
 
 <ul class="post-metadata">
-	<li><time datetime="2026-07-10">10 July 2026</time></li>
-	<li><a href="/tags/open-source/" class="post-tag">open-source</a>, </li>
+	<li><time datetime="2026-06-04">04 June 2026</time></li>
 	<li><a href="/tags/agentic-development/" class="post-tag">agentic-development</a>, </li>
-	<li><a href="/tags/tools/" class="post-tag">tools</a>, </li>
-	<li><a href="/tags/skillpress/" class="post-tag">skillpress</a></li>
+	<li><a href="/tags/field-notes/" class="post-tag">field-notes</a>, </li>
+	<li><a href="/tags/security/" class="post-tag">security</a></li>
 </ul>
 
-<p>I'm open-sourcing <a href="https://github.com/attebury/skillpress">SkillPress</a>. I built it for the same reason I built ReleasePress: I had too many moving parts and not enough control over what was actually installed.</p>
-<p>Once you're developing more than one CLI tool with agent skills, the skills stop feeling like documentation and start feeling like dependencies. Runlane has skills. ReleasePress has skills. Remogram has skills. They live in the repo under <code>agent-skills/src</code>, scoped by tool, with contracts and policy rules wrapped around them. That's the canonical source.</p>
-<p>But agents don't read the repo. They read what's installed.</p>
-<p>Codex looks in <code>~/.codex/skills</code>. Cursor wants rules under <code>.cursor/rules/skillpress</code>. Claude Code has its own tree. Antigravity has another. Each surface wants a slightly different shape, and each one is easy to edit by hand when you're in a hurry. So we do. We patch the installed copy, tell ourselves we'll backport it later, and then we can't remember which machine has which version of which skill.</p>
-<p>That's not a workflow. That's drift with extra steps.</p>
-<p>SkillPress treats provider directories as install caches, not source. You edit skills in the repo. SkillPress syncs them to the right provider surface, records hashes in the installed header, and gives you commands to inspect what's stale before you trust it.</p>
-<pre class="language-bash" tabindex="0"><code class="language-bash">skillpress status <span class="token parameter variable">--json</span> <span class="token parameter variable">--config</span> skillpress.config.json
-skillpress doctor <span class="token parameter variable">--json</span> <span class="token parameter variable">--tool</span> runlane <span class="token parameter variable">--provider</span> codex
-skillpress <span class="token function">sync</span> <span class="token parameter variable">--json</span> <span class="token parameter variable">--config</span> skillpress.config.json <span class="token parameter variable">--provider</span> cursor <span class="token parameter variable">--tool</span> releasepress
-skillpress repair-plan <span class="token parameter variable">--json</span></code></pre>
-<p><code>status</code> tells you what's installed and where. <code>doctor</code> runs policy checks against the source tree: frontmatter shape, unsafe command patterns, interactive prompts that'll block CI, that kind of thing. <code>sync</code> pushes canonical skills into a provider target. <code>repair-plan</code> is read-only. It tells you what needs a resync without rewriting anything behind your back.</p>
-<p>SkillPress doesn't write the skills. It doesn't promote CLI binaries. It doesn't run lanes or decide merge authority. It owns one narrow job: get the right guidance onto the right surface, keep the install honest, and make drift visible before it becomes habit.</p>
-<p>If you're running multiple agent tools against the same product repo, you've probably already felt this. You fix a skill in source, open Cursor, and nothing changes because Cursor is still reading yesterday's cache. Or you fix it in the cache because it's faster, and the repo falls behind. SkillPress is built to keep that boundary clean.</p>
-<p>It's early. The policy packs are strict on purpose. The installed headers are there so you can see when a provider copy is lying to you.</p>
-<p>Source and docs: <a href="https://github.com/attebury/skillpress">github.com/attebury/skillpress</a></p>
+<p>Prompt injection is easy to frame as a model problem.</p>
+<p>The model read something bad. The model obeyed it. The model should have known better.</p>
+<p>That's part of it, but I don't think it's the whole problem.</p>
+<p>In an agent workflow, prompt injection is also a boundary problem.</p>
+<p>The agent reads docs, source files, fixtures, generated reports, shared app maps, diffs, test data, local instructions, and packets prepared for model calls. Some of that text is useful context. Some of it is product evidence. Some of it may be malicious, stale, copied from somewhere else, or simply written in a way that sounds like an instruction.</p>
+<p>The mistake is treating all readable text as authority.</p>
+<p>The security work I've been doing tries to make that boundary explicit.</p>
+<h2 id="evidence-is-not-authority">Evidence is not authority</h2>
+<p>The useful phrase is evidence, not authority.</p>
+<p>Repo text can tell an agent what exists. It can describe requirements. It can show prior decisions. It can explain an edge case. It can include examples of unsafe behavior.</p>
+<p>But repo text shouldn't be able to tell the agent to ignore system instructions, bypass proof, reveal hidden prompts, skip gates, weaken a skill, or send raw workspace context to a provider.</p>
+<p>That sounds obvious until the agent workflow gets real.</p>
+<p>Agents read a lot of project text. They read it quickly. They mix prose with tool output. They pass slices of that context into model calls. They may use external providers. They may adopt shared project maps. They may summarize findings back into new packets.</p>
+<p>At that point, &quot;just don't obey bad text&quot; is too vague.</p>
+<p>The system needs a boundary the workflow can inspect.</p>
+<h2 id="what-changed-in-my-thinking">What changed in my thinking</h2>
+<p>The recent work adds that boundary in a few places.</p>
+<p>First, a prompt-boundary scan.</p>
+<p>It looks for project prose that appears to tell agents, tools, providers, or gates to do unsafe things. Examples include ignoring trusted instructions, revealing secrets, bypassing checks, weakening proof, overriding agent guidance, or hiding instructions in markup and code fences.</p>
+<p>The scanner isn't pretending to be perfect.</p>
+<p>It's a practical tripwire.</p>
+<p>High-confidence cases block. Advisory cases stay visible. Security discussions and examples can remain as evidence. If a finding is intentionally present, the waiver has to be command-owned, tied to a task or bug, tied to an actor, and hash-bound to the exact finding.</p>
+<p>That last part matters.</p>
+<p>A waiver shouldn't become a blanket permission slip. If the source text changes, the waiver goes stale.</p>
+<h2 id="the-inventory-matters">The inventory matters</h2>
+<p>An inventory of agent-facing prose surfaces sounds less exciting than a scanner, but it may be the more important piece.</p>
+<p>You can't protect a boundary you haven't named.</p>
+<p>The inventory says which commands and packets are model-visible. Some packets are agent-bound. They go to the coding agent as working context. Some packets are provider-bound. They leave the local workflow for a model provider.</p>
+<p>Both need labels.</p>
+<p>The inventory tracks whether JSON packets carry content trust, whether markdown output labels project-derived prose as untrusted evidence, and whether the surface has focused tests.</p>
+<p>That creates a ratchet.</p>
+<p>If a change adds or modifies an agent-facing surface, the workflow can ask whether the surface is registered, labeled, scanned, and tested.</p>
+<p>This is the right kind of boring security.</p>
+<p>Not &quot;we hope the agent behaves.&quot; Not &quot;we trust everyone to remember.&quot; A named surface has a named owner, named output formats, trust metadata, and proof.</p>
+<h2 id="provider-bound-packets-need-the-same-line">Provider-bound packets need the same line</h2>
+<p>The provider boundary is where this gets more concrete.</p>
+<p>Provider input is the packet the workflow allows out to an external model provider. It's the model-bound payload.</p>
+<p>That payload shouldn't contain raw workspace context by accident. Local paths, secret-like values, hidden checks, git remotes, raw source fields, and unallowlisted output should stay out of provider-bound packets.</p>
+<p>Provider input should be its own trust surface.</p>
+<p>The packet carries content trust. The payload is scanned. The redaction report is auditable. If the audit fails, the payload is rejected instead of being sent anyway.</p>
+<p>That's the right shape.</p>
+<p>The boundary isn't only what did the agent read?</p>
+<p>It's also what did the system send onward?</p>
+<h2 id="shared-maps-are-still-untrusted-until-reviewed">Shared maps are still untrusted until reviewed</h2>
+<p>Shared app maps are useful because teams want reusable records: terms, capabilities, workflows, rules, patterns, reference structures.</p>
+<p>But shared doesn't mean trusted.</p>
+<p>A shared map may come from another repo, another team, another version, or another context. It might be useful. It might also contain unsafe prose, authority files, or colliding records.</p>
+<p>Shared map text should be a separate trust class.</p>
+<p>The workflow can review a source, require a pinned hash, scan the imported records, block authority files, and write an adoption receipt. That keeps shared context from silently becoming project authority.</p>
+<p>You can make context portable without making trust portable.</p>
+<h2 id="the-useful-standard">The useful standard</h2>
+<p>The goal isn't to make prompt injection impossible.</p>
+<p>That would be too broad a claim.</p>
+<p>The useful standard is smaller and stronger:</p>
+<ul>
+<li>Agent-visible prose should be inventoried.</li>
+<li>Project-derived text should be treated as evidence, not authority.</li>
+<li>Unsafe authority-shaped text should be scanned.</li>
+<li>External provider payloads should be sanitized and auditable.</li>
+<li>Shared maps should be pinned and reviewed before adoption.</li>
+<li>Waivers should be exact, reviewed, and stale when the source changes.</li>
+</ul>
+<p>Model the app. Bound the context. Label the trust. Scan the prose. Audit the packet. Keep exceptions narrow.</p>
+<p>Prompt injection isn't only about bad text.</p>
+<p>It's about whether the workflow can tell the difference between context that helps the agent and text that's trying to steer it.</p>
 
-<ul class="links-nextprev"><li class="links-nextprev-prev">← Previous<br> <a href="/blog/releasepress-open-source/">ReleasePress is open source</a></li><li class="links-nextprev-next">Next →<br><a href="/blog/remogram-open-source/">Remogram is open source</a></li>
+<ul class="links-nextprev"><li class="links-nextprev-prev">← Previous<br> <a href="/blog/one-graph-many-native-surfaces/">One Graph, Many Native Surfaces</a></li><li class="links-nextprev-next">Next →<br><a href="/blog/trace-turns-agent-runs-into-audits/">Trace Turns Agent Runs Into Audits</a></li>
 </ul>
 
 			</heading-anchors>
@@ -535,7 +584,7 @@ skillpress repair-plan <span class="token parameter variable">--json</span></cod
 			<p>&copy; 2026 Attebury</p>
 		</footer>
 
-		<!-- This page `/blog/skillpress-open-source/` was built on 2026-07-09T22:20:22.043Z -->
+		<!-- This page `/blog/prompt-injection-is-a-boundary-problem/` was built on 2026-07-09T22:20:22.042Z -->
 		<script type="module" src="/dist/cC8wS6ZjFU.js"></script>
 	</body>
 </html>

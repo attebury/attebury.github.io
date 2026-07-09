@@ -3,8 +3,8 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>SkillPress is open source</title>
-		<meta name="description" content="Announcing SkillPress, an open source package manager for agent guidance.">
+		<title>One Graph, Many Native Surfaces</title>
+		<meta name="description" content="AI may change cross-platform app development from one UI framework to one product graph with native surface outputs.">
 		<link rel="alternate" href="/feed/feed.xml" type="application/atom+xml" title="Attebury">
 		
 		
@@ -499,33 +499,82 @@ pre[class*="language-diff-"] {
 				
 
 
-<h1 id="skillpress-is-open-source">SkillPress is open source</h1>
+<h1 id="one-graph-many-native-surfaces">One Graph, Many Native Surfaces</h1>
 
 <ul class="post-metadata">
-	<li><time datetime="2026-07-10">10 July 2026</time></li>
-	<li><a href="/tags/open-source/" class="post-tag">open-source</a>, </li>
+	<li><time datetime="2026-05-30">30 May 2026</time></li>
 	<li><a href="/tags/agentic-development/" class="post-tag">agentic-development</a>, </li>
-	<li><a href="/tags/tools/" class="post-tag">tools</a>, </li>
-	<li><a href="/tags/skillpress/" class="post-tag">skillpress</a></li>
+	<li><a href="/tags/field-notes/" class="post-tag">field-notes</a></li>
 </ul>
 
-<p>I'm open-sourcing <a href="https://github.com/attebury/skillpress">SkillPress</a>. I built it for the same reason I built ReleasePress: I had too many moving parts and not enough control over what was actually installed.</p>
-<p>Once you're developing more than one CLI tool with agent skills, the skills stop feeling like documentation and start feeling like dependencies. Runlane has skills. ReleasePress has skills. Remogram has skills. They live in the repo under <code>agent-skills/src</code>, scoped by tool, with contracts and policy rules wrapped around them. That's the canonical source.</p>
-<p>But agents don't read the repo. They read what's installed.</p>
-<p>Codex looks in <code>~/.codex/skills</code>. Cursor wants rules under <code>.cursor/rules/skillpress</code>. Claude Code has its own tree. Antigravity has another. Each surface wants a slightly different shape, and each one is easy to edit by hand when you're in a hurry. So we do. We patch the installed copy, tell ourselves we'll backport it later, and then we can't remember which machine has which version of which skill.</p>
-<p>That's not a workflow. That's drift with extra steps.</p>
-<p>SkillPress treats provider directories as install caches, not source. You edit skills in the repo. SkillPress syncs them to the right provider surface, records hashes in the installed header, and gives you commands to inspect what's stale before you trust it.</p>
-<pre class="language-bash" tabindex="0"><code class="language-bash">skillpress status <span class="token parameter variable">--json</span> <span class="token parameter variable">--config</span> skillpress.config.json
-skillpress doctor <span class="token parameter variable">--json</span> <span class="token parameter variable">--tool</span> runlane <span class="token parameter variable">--provider</span> codex
-skillpress <span class="token function">sync</span> <span class="token parameter variable">--json</span> <span class="token parameter variable">--config</span> skillpress.config.json <span class="token parameter variable">--provider</span> cursor <span class="token parameter variable">--tool</span> releasepress
-skillpress repair-plan <span class="token parameter variable">--json</span></code></pre>
-<p><code>status</code> tells you what's installed and where. <code>doctor</code> runs policy checks against the source tree: frontmatter shape, unsafe command patterns, interactive prompts that'll block CI, that kind of thing. <code>sync</code> pushes canonical skills into a provider target. <code>repair-plan</code> is read-only. It tells you what needs a resync without rewriting anything behind your back.</p>
-<p>SkillPress doesn't write the skills. It doesn't promote CLI binaries. It doesn't run lanes or decide merge authority. It owns one narrow job: get the right guidance onto the right surface, keep the install honest, and make drift visible before it becomes habit.</p>
-<p>If you're running multiple agent tools against the same product repo, you've probably already felt this. You fix a skill in source, open Cursor, and nothing changes because Cursor is still reading yesterday's cache. Or you fix it in the cache because it's faster, and the repo falls behind. SkillPress is built to keep that boundary clean.</p>
-<p>It's early. The policy packs are strict on purpose. The installed headers are there so you can see when a provider copy is lying to you.</p>
-<p>Source and docs: <a href="https://github.com/attebury/skillpress">github.com/attebury/skillpress</a></p>
+<p>Cross-platform frameworks have always chased a hard promise: build once, reach many platforms.</p>
+<p>Frameworks like .NET MAUI, Flutter, React Native, and earlier hybrid stacks try to reduce the cost of shipping web, iOS, Android, and desktop apps. They package platform differences behind shared code, shared components, or shared runtime layers.</p>
+<p>That has real value.</p>
+<p>But AI may change the thing we most need to share.</p>
+<p>If agents can produce more of the implementation, the most valuable shared asset may not be one UI framework.</p>
+<p>It may be one product graph.</p>
+<h2 id="shared-code-is-not-shared-intent">Shared code is not shared intent</h2>
+<p>Shared code solves a real problem. It reduces duplication. It keeps business logic from being rewritten four times. It can help a company ship a mobile app without building separate native teams from scratch.</p>
+<p>But shared code also creates pressure.</p>
+<p>The app may feel less native. Navigation may get awkward. Accessibility, gestures, offline behavior, and performance may not line up cleanly across targets. The team can spend as much time working around the abstraction as using it.</p>
+<p>That doesn't mean cross-platform frameworks are wrong.</p>
+<p>It means shared code is not shared product intent.</p>
+<p>The better question is: what should actually be shared?</p>
+<h2 id="the-shared-layer-may-move-up">The shared layer may move up</h2>
+<p>The useful shared layer may move above the UI framework.</p>
+<p>Instead of asking one framework to make every platform feel right, teams may ask one graph to describe what should stay true.</p>
+<p>The graph should answer:</p>
+<ul>
+<li>Which capabilities exist.</li>
+<li>Which entities and workflows matter.</li>
+<li>Which surfaces users need.</li>
+<li>Which widgets and states belong on each surface.</li>
+<li>Which rules constrain behavior.</li>
+<li>Which accessibility and localization promises apply.</li>
+<li>Which proof says the experience works.</li>
+</ul>
+<p>From there, agents or generators could produce different native outputs.</p>
+<p>The web app could use web-native patterns. The iOS app could use iOS-native navigation and controls. The Android app could use Android-native conventions. The desktop app could use desktop affordances.</p>
+<p>The shared layer wouldn't be a lowest-common-denominator UI. It would be the product map.</p>
+<h2 id="agents-may-work-better-natively">Agents may work better natively</h2>
+<p>An agent working on an iOS app may be more effective in a native iOS environment than inside a generic cross-platform abstraction. The compiler, simulator, platform APIs, accessibility tools, and design conventions all give the agent stronger feedback.</p>
+<p>The same may be true on Android, desktop, and web.</p>
+<p>The agent doesn't have to guess whether a custom abstraction maps cleanly to the platform. It can work with the platform directly. It can run platform-specific tests. It can inspect native warnings. It can use native components the way a human specialist would.</p>
+<p>But that only works if the agent has a shared source of intent.</p>
+<p>Without one, every native surface becomes its own interpretation of the product. The iOS app drifts. The web app drifts. The Android app drifts. Desktop becomes the odd surface nobody quite trusts.</p>
+<p>Native output is powerful only if we can keep the product coherent.</p>
+<h2 id="one-graph-many-native-surfaces-2">One graph, many native surfaces</h2>
+<p>The possible shape is one graph, many native surfaces.</p>
+<p>The graph describes the product. Each surface implements that product in the right platform language.</p>
+<p>That could mean:</p>
+<ul>
+<li>One capability appears on web, iOS, Android, and desktop.</li>
+<li>Each platform gets native layout, navigation, and interaction patterns.</li>
+<li>Shared rules define behavior, not pixels.</li>
+<li>Surface records describe what each platform owes the user.</li>
+<li>Agents generate or maintain platform-specific code from the same intent.</li>
+<li>Reviewers compare each output against the graph and proof.</li>
+</ul>
+<p>This isn't write once, run everywhere.</p>
+<p>It's closer to spec once, realize everywhere.</p>
+<p>The implementation can differ. The product contract should not.</p>
+<h2 id="what-happens-to-net-maui">What happens to .NET MAUI</h2>
+<p>This isn't an argument that .NET MAUI goes away.</p>
+<p>Frameworks like .NET MAUI solve real problems. Some teams want a unified codebase. Some apps are similar enough across platforms that one framework is the right tradeoff. Some organizations would rather accept platform compromises than staff multiple native surfaces.</p>
+<p>AI doesn't erase that.</p>
+<p>But it may create another path.</p>
+<p>A team may not need one cross-platform UI layer for every target if agents can help maintain several native targets from the same product graph.</p>
+<p>That changes the tradeoff.</p>
+<p>The question may stop being: which framework lets us share the most code?</p>
+<p>It may become: which shared graph lets us keep the most product coherence while each platform stays native?</p>
+<h2 id="a-possible-shape">A possible shape</h2>
+<p>If AI keeps lowering the cost of implementation, cross-platform development may become less about one runtime and more about one coordinated source of truth.</p>
+<p>Some teams will still use frameworks like .NET MAUI because shared code is the right constraint. Others may choose native surfaces because agents can carry more of the implementation load.</p>
+<p>In that world, the valuable asset isn't just the app code. It's the graph that tells every surface what should stay true.</p>
+<p>The future may not be one app that runs everywhere.</p>
+<p>It may be one product map that helps every surface feel like it belongs.</p>
 
-<ul class="links-nextprev"><li class="links-nextprev-prev">← Previous<br> <a href="/blog/releasepress-open-source/">ReleasePress is open source</a></li><li class="links-nextprev-next">Next →<br><a href="/blog/remogram-open-source/">Remogram is open source</a></li>
+<ul class="links-nextprev"><li class="links-nextprev-prev">← Previous<br> <a href="/blog/feature-waves-not-big-releases/">Feature Waves, Not Big Releases</a></li><li class="links-nextprev-next">Next →<br><a href="/blog/prompt-injection-is-a-boundary-problem/">Prompt Injection Is a Boundary Problem</a></li>
 </ul>
 
 			</heading-anchors>
@@ -535,7 +584,7 @@ skillpress repair-plan <span class="token parameter variable">--json</span></cod
 			<p>&copy; 2026 Attebury</p>
 		</footer>
 
-		<!-- This page `/blog/skillpress-open-source/` was built on 2026-07-09T22:20:22.043Z -->
+		<!-- This page `/blog/one-graph-many-native-surfaces/` was built on 2026-07-09T22:20:22.042Z -->
 		<script type="module" src="/dist/cC8wS6ZjFU.js"></script>
 	</body>
 </html>

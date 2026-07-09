@@ -28,7 +28,7 @@ remogram merge plan --number 1 --json
 
 Every forge packet carries the same trusted envelope: `type`, `schema_version`, `provider_id`, `remote_name`, `repo_id`, `observed_at`, and `ok`. That's the part you build automation against. Titles, URLs, and descriptions are forge-sourced prose. Treat them as untrusted even when the envelope is good.
 
-![Remogram trusted packet envelope](/img/blog/remogram/trusted-envelope.png)
+<img src="/img/blog/remogram/trusted-envelope.png" alt="Remogram trusted packet envelope" eleventy:ignore>
 
 That's the distinction I care about. Remogram emits facts. Runlane, Worklane, and whatever planning layer you use can interpret intent and route work. Those concerns stay outside Remogram's JSON on purpose. You won't find lane roles, task ids, or handoff metadata mixed into forge packets. If planning concepts leak into the fact layer, every consumer inherits the wrong abstraction.
 
@@ -38,27 +38,27 @@ Remogram also ships as an MCP server. Same commands, same packets, same boundari
 
 The write surface is closed by default. If an agent tries a command that isn't listed in `write_commands`, Remogram doesn't guess. It returns `write_not_configured` and tells you what to add to config.
 
-![write_not_configured for status_set](/img/blog/remogram/write-not-configured.png)
+<img src="/img/blog/remogram/write-not-configured.png" alt="write_not_configured for status_set" eleventy:ignore>
 
 To opt in, name the commands explicitly:
 
-![Example .remogram.json with write_commands](/img/blog/remogram/config-example.png)
+<img src="/img/blog/remogram/config-example.png" alt="Example .remogram.json with write_commands" eleventy:ignore>
 
 `provider capabilities --json` shows what's implemented, what auth class each write requires, and how idempotency scanning is bounded:
 
-![Provider capabilities and write surface](/img/blog/remogram/provider-capabilities.png)
+<img src="/img/blog/remogram/provider-capabilities.png" alt="Provider capabilities and write surface" eleventy:ignore>
 
 Once configured, writes return the same kind of structured facts as reads. Open a change request:
 
-![change_request_opened packet](/img/blog/remogram/change-request-opened.png)
+<img src="/img/blog/remogram/change-request-opened.png" alt="change_request_opened packet" eleventy:ignore>
 
 Set a commit status:
 
-![commit_status_set packet](/img/blog/remogram/commit-status-set.png)
+<img src="/img/blog/remogram/commit-status-set.png" alt="commit_status_set packet" eleventy:ignore>
 
 The full packet still carries provider attribution and timestamps:
 
-![commit_status_set with full envelope](/img/blog/remogram/commit-status-set-full.png)
+<img src="/img/blog/remogram/commit-status-set-full.png" alt="commit_status_set with full envelope" eleventy:ignore>
 
 If you're dogfooding multiple CLI tools against a private forge while keeping public release paths separate, you've probably hit this already. You want agents to open a change request, read checks, and report blockers without becoming merge authority. Remogram is built for that narrow job.
 

@@ -1,6 +1,6 @@
 # attebury.dev
 
-Personal blog built with [Eleventy](https://www.11ty.dev/), published to [attebury.dev](https://attebury.dev).
+Personal blog built with [eleventy-base-blog](https://github.com/11ty/eleventy-base-blog), published to [attebury.dev](https://attebury.dev).
 
 ## Branches
 
@@ -9,11 +9,12 @@ Personal blog built with [Eleventy](https://www.11ty.dev/), published to [attebu
 
 ## Adding a post
 
-Create a markdown file in `src/posts/`:
+Create a markdown file in `content/blog/`:
 
 ```markdown
 ---
 title: "Your title"
+description: "Short summary for feeds and SEO."
 date: 2026-07-09
 ---
 

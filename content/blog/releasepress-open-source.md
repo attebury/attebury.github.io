@@ -1,8 +1,8 @@
 ---
-title: "ReleasePress is open source"
+title: ReleasePress is open source
+description: Announcing ReleasePress, an open source CLI for release and export hygiene.
 date: 2026-07-09
 ---
-
 I'm open-sourcing [ReleasePress](https://github.com/attebury/releasepress), a CLI for release and export hygiene.
 
 Most repos accumulate private material — operator configs, lane state, agent skills, local scripts, coverage output — that should never ship in a public tree. ReleasePress builds a reviewable public export from an explicit allowlist, scans it for disallowed surfaces, and gates any public delivery behind human attestation.

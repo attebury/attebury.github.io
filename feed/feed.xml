@@ -16,24 +16,25 @@
     <link href="https://attebury.dev/blog/releasepress-open-source/" />
     <updated>2026-07-09T00:00:00Z</updated>
     <id>https://attebury.dev/blog/releasepress-open-source/</id>
-    <content type="html">&lt;p&gt;I&#39;m open-sourcing &lt;a href=&quot;https://github.com/attebury/releasepress&quot;&gt;ReleasePress&lt;/a&gt;, a CLI for release and export hygiene.&lt;/p&gt;
-&lt;p&gt;Most repos accumulate private material — operator configs, lane state, agent skills, local scripts, coverage output — that should never ship in a public tree. ReleasePress builds a reviewable public export from an explicit allowlist, scans it for disallowed surfaces, and gates any public delivery behind human attestation.&lt;/p&gt;
-&lt;p&gt;The workflow is deliberately boring:&lt;/p&gt;
+    <content type="html">&lt;p&gt;I&#39;m open-sourcing &lt;a href=&quot;https://github.com/attebury/releasepress&quot;&gt;ReleasePress&lt;/a&gt;. I built it because I was running several CLI tools at once and kept stepping on my own feet.&lt;/p&gt;
+&lt;p&gt;When you&#39;re developing more than one tool in parallel, local promotion stops being a convenience and starts being a coordination problem. Tool B depends on a version of Tool A that&#39;s installed on your machine. You promote a half-finished change to A because you&#39;re testing B. Now B works, A is broken, and you&#39;re not always sure which install is which. I needed a way to control when and how tools were promoted locally, so a change to one wouldn&#39;t silently wreck another&#39;s use of it.&lt;/p&gt;
+&lt;p&gt;The same problem showed up at the boundary between private development and public release. I&#39;ve been working against a local Gitea installation. That&#39;s useful, but it also means the repo on my machine is not the repo the world should see. Operator config, lane state, agent skills, scripts I wrote at midnight, all of it lives in the same tree. I wanted to choose what gets deployed publicly, preview it before it goes anywhere, and not treat &amp;quot;git push&amp;quot; as the same thing as &amp;quot;release.&amp;quot;&lt;/p&gt;
+&lt;p&gt;ReleasePress is built for that. It exports a public tree from an allowlist, scans it for secrets and private paths, and publishes to a controlled destination for human review. Staging isn&#39;t delivery. Preview isn&#39;t publication. Nothing public moves until someone has actually looked.&lt;/p&gt;
+&lt;p&gt;The workflow is intentionally boring:&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;strong&gt;Export&lt;/strong&gt; a public tree from your allowlist&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;Scan&lt;/strong&gt; for secrets and private paths&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;Stage&lt;/strong&gt; to a local or private review repo&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;Attest&lt;/strong&gt; after a human has actually looked at it&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Deliver&lt;/strong&gt; to configured providers (git remotes, npm, etc.) only when explicitly approved&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Deliver&lt;/strong&gt; to configured providers only when explicitly approved&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;ReleasePress composes with your existing build, forge, and package tools. It does not replace them. It owns the hygiene layer: what goes out, what stays in, and whether the operator has signed off before anything public moves.&lt;/p&gt;
 &lt;pre class=&quot;language-bash&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;releasepress release plan &lt;span class=&quot;token parameter variable&quot;&gt;--json&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;--config&lt;/span&gt; releasepress.config.json
 releasepress release prepare &lt;span class=&quot;token parameter variable&quot;&gt;--json&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;--config&lt;/span&gt; releasepress.config.json &lt;span class=&quot;token parameter variable&quot;&gt;--out&lt;/span&gt; /tmp/releasepress/public-tree
 releasepress release publish-review &lt;span class=&quot;token parameter variable&quot;&gt;--json&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;--config&lt;/span&gt; releasepress.config.json &lt;span class=&quot;token parameter variable&quot;&gt;--path&lt;/span&gt; /tmp/releasepress/public-tree &lt;span class=&quot;token parameter variable&quot;&gt;--target&lt;/span&gt; public-review
 releasepress release attest &lt;span class=&quot;token parameter variable&quot;&gt;--json&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;--config&lt;/span&gt; releasepress.config.json &lt;span class=&quot;token parameter variable&quot;&gt;--path&lt;/span&gt; /tmp/releasepress/public-tree &lt;span class=&quot;token parameter variable&quot;&gt;--target&lt;/span&gt; public-review --approve-public-review
 releasepress release deliver &lt;span class=&quot;token parameter variable&quot;&gt;--json&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;--config&lt;/span&gt; releasepress.config.json &lt;span class=&quot;token parameter variable&quot;&gt;--path&lt;/span&gt; /tmp/releasepress/public-tree &lt;span class=&quot;token parameter variable&quot;&gt;--target&lt;/span&gt; npm-beta --approve-public npm-beta&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Every step writes JSON receipts to &lt;code&gt;.releasepress-report/&lt;/code&gt;. Staging is not delivery. Local promote is not a public release. The status command keeps those boundaries explicit so you don&#39;t accidentally ship the wrong tree.&lt;/p&gt;
-&lt;p&gt;If you maintain repos with mixed public and private surfaces — monorepos, agent tooling, anything with operator-only config — this is the tool I wanted and couldn&#39;t find. It&#39;s early, but the contracts are strict and the gates fail closed.&lt;/p&gt;
+&lt;p&gt;Every step writes JSON receipts to &lt;code&gt;.releasepress-report/&lt;/code&gt;. ReleasePress doesn&#39;t replace your build tools, your forge, or your package registry. It sits in front of them and keeps the boundaries explicit: what&#39;s local, what&#39;s under review, and what&#39;s actually public.&lt;/p&gt;
+&lt;p&gt;It&#39;s early. The contracts are strict and the gates fail closed. That&#39;s the point.&lt;/p&gt;
 &lt;p&gt;Source and docs: &lt;a href=&quot;https://github.com/attebury/releasepress&quot;&gt;github.com/attebury/releasepress&lt;/a&gt;&lt;/p&gt;
 </content>
   </entry>

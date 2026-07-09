@@ -504,24 +504,25 @@ pre[class*="language-diff-"] {
 	<li><time datetime="2026-07-09">09 July 2026</time></li>
 </ul>
 
-<p>I'm open-sourcing <a href="https://github.com/attebury/releasepress">ReleasePress</a>, a CLI for release and export hygiene.</p>
-<p>Most repos accumulate private material — operator configs, lane state, agent skills, local scripts, coverage output — that should never ship in a public tree. ReleasePress builds a reviewable public export from an explicit allowlist, scans it for disallowed surfaces, and gates any public delivery behind human attestation.</p>
-<p>The workflow is deliberately boring:</p>
+<p>I'm open-sourcing <a href="https://github.com/attebury/releasepress">ReleasePress</a>. I built it because I was running several CLI tools at once and kept stepping on my own feet.</p>
+<p>When you're developing more than one tool in parallel, local promotion stops being a convenience and starts being a coordination problem. Tool B depends on a version of Tool A that's installed on your machine. You promote a half-finished change to A because you're testing B. Now B works, A is broken, and you're not always sure which install is which. I needed a way to control when and how tools were promoted locally, so a change to one wouldn't silently wreck another's use of it.</p>
+<p>The same problem showed up at the boundary between private development and public release. I've been working against a local Gitea installation. That's useful, but it also means the repo on my machine is not the repo the world should see. Operator config, lane state, agent skills, scripts I wrote at midnight, all of it lives in the same tree. I wanted to choose what gets deployed publicly, preview it before it goes anywhere, and not treat &quot;git push&quot; as the same thing as &quot;release.&quot;</p>
+<p>ReleasePress is built for that. It exports a public tree from an allowlist, scans it for secrets and private paths, and publishes to a controlled destination for human review. Staging isn't delivery. Preview isn't publication. Nothing public moves until someone has actually looked.</p>
+<p>The workflow is intentionally boring:</p>
 <ol>
 <li><strong>Export</strong> a public tree from your allowlist</li>
 <li><strong>Scan</strong> for secrets and private paths</li>
 <li><strong>Stage</strong> to a local or private review repo</li>
 <li><strong>Attest</strong> after a human has actually looked at it</li>
-<li><strong>Deliver</strong> to configured providers (git remotes, npm, etc.) only when explicitly approved</li>
+<li><strong>Deliver</strong> to configured providers only when explicitly approved</li>
 </ol>
-<p>ReleasePress composes with your existing build, forge, and package tools. It does not replace them. It owns the hygiene layer: what goes out, what stays in, and whether the operator has signed off before anything public moves.</p>
 <pre class="language-bash" tabindex="0"><code class="language-bash">releasepress release plan <span class="token parameter variable">--json</span> <span class="token parameter variable">--config</span> releasepress.config.json
 releasepress release prepare <span class="token parameter variable">--json</span> <span class="token parameter variable">--config</span> releasepress.config.json <span class="token parameter variable">--out</span> /tmp/releasepress/public-tree
 releasepress release publish-review <span class="token parameter variable">--json</span> <span class="token parameter variable">--config</span> releasepress.config.json <span class="token parameter variable">--path</span> /tmp/releasepress/public-tree <span class="token parameter variable">--target</span> public-review
 releasepress release attest <span class="token parameter variable">--json</span> <span class="token parameter variable">--config</span> releasepress.config.json <span class="token parameter variable">--path</span> /tmp/releasepress/public-tree <span class="token parameter variable">--target</span> public-review --approve-public-review
 releasepress release deliver <span class="token parameter variable">--json</span> <span class="token parameter variable">--config</span> releasepress.config.json <span class="token parameter variable">--path</span> /tmp/releasepress/public-tree <span class="token parameter variable">--target</span> npm-beta --approve-public npm-beta</code></pre>
-<p>Every step writes JSON receipts to <code>.releasepress-report/</code>. Staging is not delivery. Local promote is not a public release. The status command keeps those boundaries explicit so you don't accidentally ship the wrong tree.</p>
-<p>If you maintain repos with mixed public and private surfaces — monorepos, agent tooling, anything with operator-only config — this is the tool I wanted and couldn't find. It's early, but the contracts are strict and the gates fail closed.</p>
+<p>Every step writes JSON receipts to <code>.releasepress-report/</code>. ReleasePress doesn't replace your build tools, your forge, or your package registry. It sits in front of them and keeps the boundaries explicit: what's local, what's under review, and what's actually public.</p>
+<p>It's early. The contracts are strict and the gates fail closed. That's the point.</p>
 <p>Source and docs: <a href="https://github.com/attebury/releasepress">github.com/attebury/releasepress</a></p>
 
 
@@ -532,7 +533,7 @@ releasepress release deliver <span class="token parameter variable">--json</span
 			<p>&copy; 2026 Attebury</p>
 		</footer>
 
-		<!-- This page `/blog/releasepress-open-source/` was built on 2026-07-09T21:24:01.832Z -->
+		<!-- This page `/blog/releasepress-open-source/` was built on 2026-07-09T21:32:16.058Z -->
 		<script type="module" src="/dist/cC8wS6ZjFU.js"></script>
 	</body>
 </html>

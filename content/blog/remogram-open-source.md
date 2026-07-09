@@ -2,6 +2,11 @@
 title: Remogram is open source
 description: Announcing Remogram, an open source forge boundary for agent-readable JSON facts.
 date: 2026-07-11
+tags:
+  - open-source
+  - agentic-development
+  - tools
+  - remogram
 ---
 I'm open-sourcing [Remogram](https://github.com/attebury/remogram). I built it because agents kept guessing about forge state, and the tools we had were built for humans reading prose in a terminal.
 

@@ -2,6 +2,11 @@
 title: SkillPress is open source
 description: Announcing SkillPress, an open source package manager for agent guidance.
 date: 2026-07-10
+tags:
+  - open-source
+  - agentic-development
+  - tools
+  - skillpress
 ---
 I'm open-sourcing [SkillPress](https://github.com/attebury/skillpress). I built it for the same reason I built ReleasePress: I had too many moving parts and not enough control over what was actually installed.
 

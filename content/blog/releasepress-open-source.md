@@ -2,6 +2,11 @@
 title: ReleasePress is open source
 description: Announcing ReleasePress, an open source CLI for release and export hygiene.
 date: 2026-07-09
+tags:
+  - open-source
+  - agentic-development
+  - tools
+  - releasepress
 ---
 I'm open-sourcing [ReleasePress](https://github.com/attebury/releasepress). I built it because I was running several CLI tools at once and kept stepping on my own feet.
 

@@ -7,3 +7,5 @@ const eleventyNavigation = {
 # About
 
 This is my personal blog. I write here when I have something worth saying.
+
+Find me on [LinkedIn](https://www.linkedin.com/in/attebury/?skipRedirect=true).

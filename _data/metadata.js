@@ -5,6 +5,7 @@ export default {
 	description: "Notes and writing.",
 	author: {
 		name: "Attebury",
-		url: "https://attebury.dev/about/"
+		url: "https://attebury.dev/about/",
+		linkedin: "https://www.linkedin.com/in/attebury/?skipRedirect=true"
 	}
 }

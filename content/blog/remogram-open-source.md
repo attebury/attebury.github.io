@@ -1,5 +1,5 @@
 ---
-title: Remogram: forge state as JSON facts for agents
+title: "Remogram: forge state as JSON facts for agents"
 description: Announcing Remogram, an open source forge boundary for agent-readable JSON facts.
 date: 2026-07-11
 tags:

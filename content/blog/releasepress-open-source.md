@@ -1,5 +1,5 @@
 ---
-title: ReleasePress: local promotion and export hygiene for CLI tools
+title: "ReleasePress: local promotion and export hygiene for CLI tools"
 description: Announcing ReleasePress, an open source CLI for release and export hygiene.
 date: 2026-07-09
 tags:

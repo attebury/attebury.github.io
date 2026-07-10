@@ -1,5 +1,5 @@
 ---
-title: SkillPress is open source
+title: SkillPress: agent guidance as installable packages
 description: Announcing SkillPress, an open source package manager for agent guidance.
 date: 2026-07-10
 tags:

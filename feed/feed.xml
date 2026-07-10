@@ -12,7 +12,7 @@
     <name>Attebury</name>
   </author>
   <entry>
-    <title>Remogram is open source</title>
+    <title>Remogram: forge state as JSON facts for agents</title>
     <link href="https://attebury.dev/blog/remogram-open-source/" />
     <updated>2026-07-11T00:00:00Z</updated>
     <id>https://attebury.dev/blog/remogram-open-source/</id>
@@ -49,7 +49,7 @@ remogram merge plan &lt;span class=&quot;token parameter variable&quot;&gt;--num
 </content>
   </entry>
   <entry>
-    <title>SkillPress is open source</title>
+    <title>SkillPress: agent guidance as installable packages</title>
     <link href="https://attebury.dev/blog/skillpress-open-source/" />
     <updated>2026-07-10T00:00:00Z</updated>
     <id>https://attebury.dev/blog/skillpress-open-source/</id>
@@ -71,7 +71,7 @@ skillpress repair-plan &lt;span class=&quot;token parameter variable&quot;&gt;--
 </content>
   </entry>
   <entry>
-    <title>ReleasePress is open source</title>
+    <title>ReleasePress: local promotion and export hygiene for CLI tools</title>
     <link href="https://attebury.dev/blog/releasepress-open-source/" />
     <updated>2026-07-09T00:00:00Z</updated>
     <id>https://attebury.dev/blog/releasepress-open-source/</id>

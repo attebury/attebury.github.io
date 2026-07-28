@@ -10,95 +10,50 @@ tags:
 ---
 [Attepack](https://github.com/attebury/attepack) is now open source.
 
-Attepack is a library for JSON packets. Use it when your tool sends JSON to agents or to automation. It standardizes envelope shape, error codes, error cleaning, mutation receipts, and diagnostic events.
+I built it because the Forest tool stack kept converging on the same JSON packet shape without sharing the code that enforces it. Remogram emits forge facts. Waylane emits execution facts. Verigram emits work judgments. Atteway emits audit view models. They all need `type`, `schema_version`, `observed_at`, and `ok`. They all need stable error codes when something fails. Each repo was carrying its own copy of the envelope builder, or a partial copy, or a copy that had not caught up yet.
 
-## Install
+That is not a documentation problem. It is schema drift with extra steps. One tool adds provider attribution fields. Another tool forgets. A third tool puts the timestamp in a different place. Agent automation starts branching on three dialects of the same idea.
 
-```bash
-npm install attepack
-```
+## The pattern
 
-```js
-import {
-  buildPacketEnvelope,
-  buildErrorPacket,
-  buildMutationReceipt,
-  validatePacketEnvelope,
-  sanitizeErrorMessage,
-} from "attepack";
-```
+Error output is the painful case. A command fails on a bad path or a missing config key. The error message includes a home directory path and a token that was in the environment. The packet says `ok: false`, but the leak is already in `error_message`. The agent logs the JSON and the secret leaves the workspace.
 
-## Envelope fields
+Mutation is the second case. A tool changes forge state or writes a local file. The CLI prints success prose. Nothing records what changed, what was intended, or whether readback matched. You cannot audit the action later except from shell history.
 
-Every packet carries these required fields:
+Facts versus diagnostics is the third case. A routing failure gets emitted with the same envelope as a forge fact. Downstream code treats a diagnostic event like merge authority. The boundary was never explicit in the packet shape.
 
-- `type` — packet kind, for example `example.forge_facts.v1`
-- `schema_version` — integer schema version
-- `observed_at` — ISO timestamp
-- `ok` — boolean success flag
+## What Attepack is for
 
-Builders can also set provider data:
+Attepack holds the shared plumbing for JSON-first tools. Envelope build and validation. A single error code registry. Error message and detail cleaning through [Atteguard](https://github.com/attebury/atteguard) text-safety. Mutation receipts with digests and readback status. A separate diagnostic event builder that emits through `execFile`, not a shell string.
 
-- `provider_id` — forge provider name
-- `remote_name` — git remote name
-- `repo_id` — owner and repo, for example `owner/repo`
+It is a library. It does not contain your domain logic. Remogram still owns forge fact types. Waylane still owns execution facts. Attepack owns the envelope, the error shape, and the hygiene around both.
+
+## Example
+
+A forge read fails because write commands are not configured. The tool should emit a structured error, not a string that echoes the config snippet and the workspace path.
 
 ```js
-const envelope = buildPacketEnvelope({
+import { buildErrorPacket } from "attepack";
+
+const packet = buildErrorPacket({
   type: "example.forge_facts.v1",
-  ok: true,
+  ok: false,
+  errorCode: "write_not_configured",
+  errorMessage: "Write command is not listed in config",
   providerId: "gitea",
   remoteName: "origin",
   repoId: "owner/repo",
+  details: {
+    write_command: "cr_open",
+    remediation: "Add cr_open to write_commands in .example.json",
+  },
 });
 ```
 
-`validatePacketEnvelope` rejects shape errors. `buildErrorPacket` sets `ok: false` and attaches a normalized `error_code`.
+Attepack normalizes the error code, scrubs paths and secrets from messages and allowlisted detail fields, and keeps the envelope shape the same as a success packet. Automation can branch on `error_code`. It does not need to parse prose.
 
-## Error codes and cleaning
+Reads and writes stay different artifacts. Fact packets answer what the forge observed. Mutation receipts answer what changed and whether readback verified it. Diagnostic events answer what failed in command routing. Attepack gives each one a shape. Your tool still owns the policy of when a mutation is allowed.
 
-Known error codes live in one registry. Examples include `invalid_args`, `path_unsafe`, `write_not_configured`, and `atteguard_sensitive_content`.
+Install steps, subpath exports, module layout, and API detail are in the README.
 
-Error messages and detail objects pass through [Atteguard](https://github.com/attebury/atteguard) text-safety before output. Home directory paths collapse to `~`. Secret spans become redacted text. Detail objects pass through an allowlist so internal fields do not leak by accident.
-
-A tool can fail and leak a token at the same time. Attepack tries to stop that leak on the error path.
-
-Use `redactSensitiveTextForSecurity` from Atteguard when truncation would hide unchecked text. Attepack uses Atteguard on the error sanitization path.
-
-## Mutation receipts
-
-Reads and writes need different artifacts. `buildMutationReceipt` produces a receipt with:
-
-- `mutation_kind` — what changed
-- `identity_digest` and `intent_digest` — SHA256 digests
-- optional `pre_state_digest` and `post_state_digest`
-- `readback_status` — verification result after the mutation
-- the same provider fields as fact packets
-
-`validateMutationReceipt` checks digest shape and receipt id format before you log or forward the receipt.
-
-## Diagnostic events
-
-Attepack ships a `diagnostic.event.v1` builder and validator. The emitter writes the event to a temp file and invokes a configured sink through `execFile`. It does not shell out through a string. Event details are sanitized before emission.
-
-Use diagnostic events for failure class and command scope. Do not use them as forge facts or merge plans.
-
-## Modules
-
-| Module | Purpose |
-| --- | --- |
-| `attepack/envelope` | Build and validate packet envelopes |
-| `attepack/errors` | Normalize error codes |
-| `attepack/sanitize` | Clean error messages and detail objects |
-| `attepack/receipts` | Build and validate mutation receipts |
-| `attepack/diagnostics` | Build, validate, and emit diagnostic events |
-
-## Where it sits
-
-Attepack does not contain your domain logic. It contains the envelope, the error shape, and the cleaning rules for both.
-
-Tools such as Remogram carry their own domain packet types. Attepack holds the shared plumbing so the next tool does not copy envelope code from a README.
-
-It is early. The schema version is 1.
-
-Source and docs: [github.com/attebury/attepack](https://github.com/attepack)
+Start here: [github.com/attebury/attepack#readme](https://github.com/attebury/attepack#readme)

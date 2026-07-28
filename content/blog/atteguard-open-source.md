@@ -11,69 +11,47 @@ tags:
 ---
 [Atteguard](https://github.com/attebury/atteguard) is now open source.
 
-Atteguard is a library for trust decisions in CLI tools and agent tools. It is not a CLI. It has no merge control. It has no release workflow. You import the module you need into your own tool.
+I built it after an adversarial security review across the Forest tool stack. The same bug shape kept appearing in different repos. The tool would have a real guard for a trust decision. Then a second path into the same decision would bypass it, or trust caller-supplied data, or use a shortcut that looked safe until you tested symlinks or flag injection.
 
-## Install
+That is not a team discipline problem. It is duplicated security code. Fix it in one tool. Reinvent it in the next. Break it again in a helper file six months later.
 
-```bash
-npm install atteguard
-```
+## The pattern
 
-The package uses subpath exports. You import only the module you need.
+Path containment is a common example. You write a check that keeps output inside a trusted root. A symlink inside the root points outside. A naive check resolves the candidate against itself and passes. The write still escapes.
+
+Command execution is the same story. You allowlist argv in the main command path. A helper builds a shell string. A test fixture passes a ref that starts with `-`. Git treats it as a flag.
+
+Signing is the same story again. You verify a signature packet. The verifier reads the public key from the packet it is trying to verify. An attacker generates a key pair, signs arbitrary data, and embeds their own key. The check passes for the wrong reason.
+
+## What Atteguard is for
+
+Atteguard extracts the recurring fixes into one library. Path containment that survives symlinks. Secret scanning and redaction. Argv template allowlisting. Git ref validation before subprocess calls. Signature verification with a caller-supplied trusted key. An AST checker that compares `authority-claims.json` to actual write call sites in source.
+
+It is a library. It is not a CLI. It does not grant merge authority. It does not run release workflows. You import the module you need and wire it into your tool. Atteguard gives you the guard code. Your tool must still install that guard on every path that needs it.
+
+## Example
+
+A tool exports files from a trusted workspace root. An agent supplies `work/report.json`. The path looks lexically inside the root. The directory is a symlink to `/tmp`.
 
 ```js
-import { resolveContainedPath } from "atteguard/path-safety";
-import { validateAllowlistedCommand } from "atteguard/command-safety";
-import { redactSensitiveTextForSecurity } from "atteguard/text-safety";
-import { verifyPayloadSignature } from "atteguard/signing";
-import { checkAuthorityClaims } from "atteguard/authority";
+import { resolveContainedPath, resolveCanonicalRoot } from "atteguard/path-safety";
+
+const root = "/path/to/trusted-workspace";
+const canonicalRoot = resolveCanonicalRoot(root);
+
+const { canonical_path } = resolveContainedPath({
+  name: "report",
+  candidatePath: "work/report.json",
+  root,
+  canonicalRoot,
+});
+// use canonical_path for the read or write — not the raw agent string
 ```
 
-## Modules
+Without the second-phase check against the root's real path, the export looks protected when it is not.
 
-| Module | Use it when you need to |
-| --- | --- |
-| `path-safety` | Keep a file or directory inside a trusted root. The check resists symlink escape. |
-| `text-safety` | Scan text for secrets. Redact secrets before you log or emit JSON. |
-| `command-safety` | Allow only approved argv shapes. Reject raw shell strings and undeclared env vars. |
-| `git-safety` | Run local git commands with ref validation before a subprocess starts. |
-| `cli-safety` | Validate CLI flag contracts. Format errors without leaking workspace data. |
-| `signing` | Sign or verify payload files. The trusted public key must come from your config. |
-| `authority` | Check that `authority-claims.json` matches actual write call sites in source. |
-| `telemetry` | Validate diagnostic event shape. Scan event strings with the same secret rules. |
+Each module ships adversarial tests named `*.self-issued.test.js`. Those tests encode the exploit the module was written to block. Pin an exact version. These are trust primitives. An old install can look safe when it is not.
 
-## Path safety
+Install steps, subpath exports, module examples, release policy, and API detail are in the README.
 
-`resolveContainedPath` runs two checks. First it checks the path against the root before symlink resolution. Then it checks the canonical path against the root after `realpath`. A symlink inside the root cannot point outside the root and still pass.
-
-Use `resolveContainedFilePath` when the target must be a regular file. It rejects symlinked files.
-
-Do not use `isPathInside` alone when symlinks may be present. It is a lexical check only.
-
-## Command and git safety
-
-`validateAllowlistedCommand` accepts only argv that matches a pre-declared template. Literal tokens must match exactly. Typed slots such as `integerArg()` match by pattern. The validator also checks command `cwd` against a trusted root when you set one.
-
-`gitRevParseSafe` and related helpers call `git` through `execFile`. They validate ref strings before the subprocess starts. A ref must not start with `-` or contain `..`.
-
-## Signing
-
-`verifyPayloadSignature` requires `expectedPublicKeyPem` from the caller. It never uses the public key embedded in the signature packet for verification. Without that rule, anyone can make a key pair, sign data, and embed their own key in the packet.
-
-`loadCanonicalPayload` canonicalizes JSON before digest and sign operations. It rejects symlinked payload paths.
-
-## Authority claims
-
-A repo can ship `authority-claims.json`. The file lists guard functions and the write call sites they must protect. `checkAuthorityClaims` parses governed source files with an AST. It finds `fs.writeFileSync`, `fs.copyFileSync`, and related calls. It reports registered sites that are missing, and write calls that are not registered.
-
-A passing report means the registry and the source agree. It is not proof that every runtime path is safe.
-
-## Tests and versions
-
-Each module ships adversarial tests named `*.self-issued.test.js`. These tests encode the exploit that the module must block.
-
-You must pin an exact version. These are trust primitives. An old version can look safe when it is not safe. The project is pre-1.0.
-
-Atteguard does not grant merge, release, or workflow authority. Your tool must wire each primitive into every path that needs it.
-
-Source and docs: [github.com/attebury/atteguard](https://github.com/attebury/atteguard)
+Start here: [github.com/attebury/atteguard#readme](https://github.com/attebury/atteguard#readme)

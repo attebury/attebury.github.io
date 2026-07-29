@@ -318,8 +318,8 @@ header {
 				<h2 class="visually-hidden" id="top-level-navigation-menu">Top level navigation menu</h2>
 				<ul class="nav">
 					<li class="nav-item"><a href="/">Home</a></li>
-					<li class="nav-item"><a href="/blog/" aria-current="page">Archive</a></li>
-					<li class="nav-item"><a href="/tools/">Tools</a></li>
+					<li class="nav-item"><a href="/blog/">Archive</a></li>
+					<li class="nav-item"><a href="/tools/" aria-current="page">Tools</a></li>
 					<li class="nav-item"><a href="/about/">About</a></li>
 					<li class="nav-item"><a href="/tags/">Tags</a></li>
 					<li class="nav-item"><a href="/feed/feed.xml">Feed</a></li>
@@ -329,52 +329,23 @@ header {
 
 		<main id="main">
 			<heading-anchors>
-				<h1 id="archive">Archive</h1>
-
-
-<ol reversed="" class="postlist" style="--postlist-index: 11">
-	<li class="postlist-item">
-		<a href="/blog/attepack-open-source/" class="postlist-link">Attepack: shared packet envelopes for JSON-first tools</a>
-		<time class="postlist-date" datetime="2026-07-27">July 2026</time>
-	</li>
-	<li class="postlist-item">
-		<a href="/blog/atteguard-open-source/" class="postlist-link">Atteguard: trust-decision primitives for agent tooling</a>
-		<time class="postlist-date" datetime="2026-07-26">July 2026</time>
-	</li>
-	<li class="postlist-item">
-		<a href="/blog/remogram-open-source/" class="postlist-link">Remogram: forge state as JSON facts for agents</a>
-		<time class="postlist-date" datetime="2026-07-11">July 2026</time>
-	</li>
-	<li class="postlist-item">
-		<a href="/blog/skillpress-open-source/" class="postlist-link">SkillPress: agent guidance as installable packages</a>
-		<time class="postlist-date" datetime="2026-07-10">July 2026</time>
-	</li>
-	<li class="postlist-item">
-		<a href="/blog/releasepress-open-source/" class="postlist-link">ReleasePress: local promotion and export hygiene for CLI tools</a>
-		<time class="postlist-date" datetime="2026-07-09">July 2026</time>
-	</li>
-	<li class="postlist-item">
-		<a href="/blog/trace-turns-agent-runs-into-audits/" class="postlist-link">Trace Turns Agent Runs Into Audits</a>
-		<time class="postlist-date" datetime="2026-06-05">June 2026</time>
-	</li>
-	<li class="postlist-item">
-		<a href="/blog/prompt-injection-is-a-boundary-problem/" class="postlist-link">Prompt Injection Is a Boundary Problem</a>
-		<time class="postlist-date" datetime="2026-06-04">June 2026</time>
-	</li>
-	<li class="postlist-item">
-		<a href="/blog/one-graph-many-native-surfaces/" class="postlist-link">One Graph, Many Native Surfaces</a>
-		<time class="postlist-date" datetime="2026-05-30">May 2026</time>
-	</li>
-	<li class="postlist-item">
-		<a href="/blog/feature-waves-not-big-releases/" class="postlist-link">Feature Waves, Not Big Releases</a>
-		<time class="postlist-date" datetime="2026-05-29">May 2026</time>
-	</li>
-	<li class="postlist-item">
-		<a href="/blog/when-software-work-gets-shopified/" class="postlist-link">When Software Work Gets Shopified</a>
-		<time class="postlist-date" datetime="2026-05-28">May 2026</time>
-	</li>
-</ol>
-
+				<h1 id="tools">Tools</h1>
+<p>Open source tools for agentic development. Each tool has a GitHub repository and a post on this site.</p>
+<h2 id="atteguard"><a href="https://github.com/attebury/atteguard">Atteguard</a></h2>
+<p>Shared security code for CLI tools and agent tools. Path containment, secret scanning, argv allowlists, git ref checks, and signature verification with a caller-supplied trusted key.</p>
+<p><a href="https://github.com/attebury/atteguard">GitHub</a> · <a href="/blog/atteguard-open-source/">Post</a></p>
+<h2 id="attepack"><a href="https://github.com/attebury/attepack">Attepack</a></h2>
+<p>Shared packet envelopes for JSON-first tools. Envelope build and validation, error codes, message clean-up through Atteguard, and mutation receipts.</p>
+<p><a href="https://github.com/attebury/attepack">GitHub</a> · <a href="/blog/attepack-open-source/">Post</a></p>
+<h2 id="releasepress"><a href="https://github.com/attebury/releasepress">ReleasePress</a></h2>
+<p>Local promotion and export hygiene for CLI tools. Export a public tree from an allowlist, scan for secrets, and publish only after review.</p>
+<p><a href="https://github.com/attebury/releasepress">GitHub</a> · <a href="/blog/releasepress-open-source/">Post</a></p>
+<h2 id="remogram"><a href="https://github.com/attebury/remogram">Remogram</a></h2>
+<p>Forge boundary for agents. Remogram returns provider-attributed JSON facts from Gitea, GitHub, or GitLab. Reads and plans are the default. Writes are opt-in.</p>
+<p><a href="https://github.com/attebury/remogram">GitHub</a> · <a href="/blog/remogram-open-source/">Post</a></p>
+<h2 id="skillpress"><a href="https://github.com/attebury/skillpress">SkillPress</a></h2>
+<p>Package manager for agent guidance. Sync skills from a canonical repo source into Cursor, Codex, Claude Code, and related surfaces without hand-edited install drift.</p>
+<p><a href="https://github.com/attebury/skillpress">GitHub</a> · <a href="/blog/skillpress-open-source/">Post</a></p>
 
 
 			</heading-anchors>
@@ -384,7 +355,7 @@ header {
 			<p>&copy; 2026 Attebury · <a href="https://www.linkedin.com/in/attebury/?skipRedirect=true">LinkedIn</a></p>
 		</footer>
 
-		<!-- This page `/blog/` was built on 2026-07-29T18:34:01.899Z -->
+		<!-- This page `/tools/` was built on 2026-07-29T18:34:01.899Z -->
 		<script type="module" src="/dist/cC8wS6ZjFU.js"></script>
 	</body>
 </html>

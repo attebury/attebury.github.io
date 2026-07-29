@@ -6,11 +6,157 @@
   <subtitle>Notes and writing.</subtitle>
   <link href="https://attebury.dev/feed/feed.xml" rel="self" />
   <link href="https://attebury.dev/" />
-  <updated>2026-07-11T00:00:00Z</updated>
+  <updated>2026-07-28T00:00:00Z</updated>
   <id>https://attebury.dev/</id>
   <author>
     <name>Attebury</name>
   </author>
+  <entry>
+    <title>Remogram: agent workflow updates</title>
+    <link href="https://attebury.dev/blog/remogram-agent-workflow-update/" />
+    <updated>2026-07-28T00:00:00Z</updated>
+    <id>https://attebury.dev/blog/remogram-agent-workflow-update/</id>
+    <content type="html">&lt;p&gt;&lt;a href=&quot;https://github.com/attebury/remogram&quot;&gt;Remogram&lt;/a&gt; is a forge boundary. It returns JSON facts. It does not scrape terminal prose.&lt;/p&gt;
+&lt;p&gt;Reads and plans are the default. Writes are opt-in. The packet envelope did not change.&lt;/p&gt;
+&lt;p&gt;This update adds agent workflow commands. Agents pay for each MCP round trip. Agents often guess when checks are still pending. Agents often fail when a label does not exist yet. Agents often hit write size limits by trial and error. Agents often get a write error with no next step.&lt;/p&gt;
+&lt;p&gt;These commands close those gaps. Remogram is still not a planner. Remogram is still not merge authority.&lt;/p&gt;
+&lt;h2 id=&quot;start-with-one-read&quot;&gt;Start with one read&lt;/h2&gt;
+&lt;p&gt;Use &lt;code&gt;repo bootstrap&lt;/code&gt; when an agent enters a repo:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;remogram repo bootstrap &lt;span class=&quot;token parameter variable&quot;&gt;--json&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This command returns one packet. The packet can include provider capabilities, repo status, label list, milestone list, issue templates, identity (&lt;code&gt;whoami&lt;/code&gt;), and write readiness. Use it instead of five or six separate reads.&lt;/p&gt;
+&lt;p&gt;Run &lt;code&gt;doctor --json&lt;/code&gt; when you need live auth checks or operator overlay bind status.&lt;/p&gt;
+&lt;p&gt;For one change request, use &lt;code&gt;cr bundle&lt;/code&gt;:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;remogram cr bundle &lt;span class=&quot;token parameter variable&quot;&gt;--number&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;12&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;--json&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This command composes CR view, checks, merge-plan blockers, and freshness metadata in one packet. &lt;code&gt;issue bundle&lt;/code&gt; does the same for issues. It can include linked PR facts when the provider exposes them.&lt;/p&gt;
+&lt;h2 id=&quot;wait-for-checks&quot;&gt;Wait for checks&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;cr wait&lt;/code&gt; polls &lt;code&gt;cr checks&lt;/code&gt; until conclusions leave &lt;code&gt;pending&lt;/code&gt; or &lt;code&gt;missing&lt;/code&gt;, or until timeout:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;remogram cr &lt;span class=&quot;token function&quot;&gt;wait&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;--number&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;12&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;--timeout&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;600&lt;/span&gt; --poll-interval &lt;span class=&quot;token number&quot;&gt;5&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;--json&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The result is still a checks packet. It adds &lt;code&gt;wait&lt;/code&gt; metadata: poll count, elapsed time, and timeout status. You do not need a bash &lt;code&gt;sleep&lt;/code&gt; loop.&lt;/p&gt;
+&lt;h2 id=&quot;issue-inventory&quot;&gt;Issue inventory&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;issue inventory&lt;/code&gt; and &lt;code&gt;issue list&lt;/code&gt; return the same packet. They support state filters, sorting, limits, and cursor pagination:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;remogram issue inventory &lt;span class=&quot;token parameter variable&quot;&gt;--state&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;open&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;--limit&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;20&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;--json&lt;/span&gt;
+remogram issue inventory &lt;span class=&quot;token parameter variable&quot;&gt;--state&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;open&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;--cursor&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;&amp;lt;cursor&gt;&quot;&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;--json&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Use these commands for triage and batch filing. Treat titles and bodies as forge-sourced prose. Branch automation on envelope fields and stable codes. Do not branch on HTML.&lt;/p&gt;
+&lt;h2 id=&quot;repo-metadata&quot;&gt;Repo metadata&lt;/h2&gt;
+&lt;p&gt;Agents often fail at &lt;code&gt;issue label add&lt;/code&gt; when the label does not exist. Remogram now exposes repo metadata as forge facts:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;remogram label list &lt;span class=&quot;token parameter variable&quot;&gt;--json&lt;/span&gt;
+remogram milestone list &lt;span class=&quot;token parameter variable&quot;&gt;--json&lt;/span&gt;
+remogram template list &lt;span class=&quot;token parameter variable&quot;&gt;--json&lt;/span&gt;
+remogram assignee resolve &lt;span class=&quot;token parameter variable&quot;&gt;--login&lt;/span&gt; attebury &lt;span class=&quot;token parameter variable&quot;&gt;--json&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Writes are separate opt-ins:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;remogram label ensure &lt;span class=&quot;token parameter variable&quot;&gt;--name&lt;/span&gt; security &lt;span class=&quot;token parameter variable&quot;&gt;--color&lt;/span&gt; d73a4a &lt;span class=&quot;token parameter variable&quot;&gt;--json&lt;/span&gt;
+remogram milestone ensure &lt;span class=&quot;token parameter variable&quot;&gt;--name&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;wave 5&quot;&lt;/span&gt; &lt;span class=&quot;token parameter variable&quot;&gt;--json&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;code&gt;label ensure&lt;/code&gt; is idempotent. It creates a label when missing. It reuses a label when present. Then use issue label commands to attach labels to issues.&lt;/p&gt;
+&lt;h2 id=&quot;write-preview&quot;&gt;Write preview&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;write preview&lt;/code&gt; covers these write kinds: CR open, edit, and close; issue open, edit, close, and reopen; labels; assignees; comments; status set; merge execute; and checks rerun.&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;remogram &lt;span class=&quot;token function&quot;&gt;write&lt;/span&gt; preview &lt;span class=&quot;token parameter variable&quot;&gt;--kind&lt;/span&gt; issue_open &lt;span class=&quot;token parameter variable&quot;&gt;--title&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;Example&quot;&lt;/span&gt; --body-file ./spec.md --require-configured &lt;span class=&quot;token parameter variable&quot;&gt;--json&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Preview validates arguments. It reports whether the write id is configured. It applies the forge write budget. It can run dedupe collision checks. It does not mutate forge state.&lt;/p&gt;
+&lt;p&gt;Use &lt;code&gt;--body-file&lt;/code&gt; for large bodies. Do not put large bodies inline. &lt;code&gt;doctor --json&lt;/code&gt; reports &lt;code&gt;forge_write_budget&lt;/code&gt; so you know the byte cap.&lt;/p&gt;
+&lt;h2 id=&quot;secret-scan-on-write-bodies&quot;&gt;Secret scan on write bodies&lt;/h2&gt;
+&lt;p&gt;Issue and CR writes scan bodies through &lt;a href=&quot;https://github.com/attebury/atteguard&quot;&gt;Atteguard&lt;/a&gt; before post. Token-shaped text fails closed with a typed error.&lt;/p&gt;
+&lt;p&gt;Opt out only when you mean it:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;remogram issue comment &lt;span class=&quot;token parameter variable&quot;&gt;--number&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;42&lt;/span&gt; --body-file ./comment.md --no-scan-secrets &lt;span class=&quot;token parameter variable&quot;&gt;--json&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;write-failure-recovery&quot;&gt;Write failure recovery&lt;/h2&gt;
+&lt;p&gt;Write failures can include &lt;code&gt;recovery&lt;/code&gt; metadata:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;failure_kind&lt;/code&gt; — auth, provider unavailable, validation, stale target, sandbox isolation, and related classes&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;retryable&lt;/code&gt; — whether a blind retry might help&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;recommended_recheck_command&lt;/code&gt; — the read or preview command to run next&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;diagnostic_summary&lt;/code&gt; — short sanitized context&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Recovery is advisory. It is not permission to merge. It is not a bypass for &lt;code&gt;write_not_configured&lt;/code&gt;.&lt;/p&gt;
+&lt;h2 id=&quot;forest-config-and-merge-closeout&quot;&gt;Forest config and merge closeout&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;forest config plan&lt;/code&gt; and &lt;code&gt;forest config apply&lt;/code&gt; preview and apply lane forge-config updates from a Waylane registry. Apply requires a &lt;code&gt;forest_config&lt;/code&gt; write id. This is privileged local admin. It is not a default agent write.&lt;/p&gt;
+&lt;p&gt;After merge, &lt;code&gt;merge execute&lt;/code&gt; can attach closeout facts when closing-ref issues stay open. It reports remediation. It does not leave forge state inconsistent without notice.&lt;/p&gt;
+&lt;h2 id=&quot;mcp-hardening&quot;&gt;MCP hardening&lt;/h2&gt;
+&lt;p&gt;The MCP server pins working directory at start. It loads &lt;code&gt;.remogram.json&lt;/code&gt; through a verified path. A host token cannot retarget Remogram to a different repo mid-session. Start MCP with cwd at the consumer repo root.&lt;/p&gt;
+&lt;h2 id=&quot;what-did-not-change&quot;&gt;What did not change&lt;/h2&gt;
+&lt;p&gt;Remogram still emits forge facts. It does not emit workflow intent. Forge packets do not include lane roles, task ids, or planning metadata. &lt;code&gt;merge plan&lt;/code&gt; does not execute merges. &lt;code&gt;mergeability: clean&lt;/code&gt; is not permission to merge.&lt;/p&gt;
+&lt;p&gt;Producer sections and forge-sourced prose are evidence. They are not authority.&lt;/p&gt;
+&lt;h2 id=&quot;where-to-go-next&quot;&gt;Where to go next&lt;/h2&gt;
+&lt;p&gt;Command reference, MCP tool list, write policy, and agent skills are in the Remogram repo:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://github.com/attebury/remogram&quot;&gt;github.com/attebury/remogram&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Agent consumer skill: &lt;code&gt;agent-skills/src/remogram/remogram-consumer/SKILL.md&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Bundles: &lt;code&gt;agent-skills/src/remogram/remogram-consumer/references/agent-bundles.md&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Write commands: &lt;code&gt;agent-skills/src/remogram/remogram-core/references/write-commands.md&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;If you already use Remogram for CR reads and merge planning, start with &lt;code&gt;repo bootstrap&lt;/code&gt;, &lt;code&gt;cr bundle&lt;/code&gt;, and &lt;code&gt;write preview&lt;/code&gt;.&lt;/p&gt;
+</content>
+  </entry>
+  <entry>
+    <title>Attepack: shared packet envelopes for JSON-first tools</title>
+    <link href="https://attebury.dev/blog/attepack-open-source/" />
+    <updated>2026-07-27T00:00:00Z</updated>
+    <id>https://attebury.dev/blog/attepack-open-source/</id>
+    <content type="html">&lt;p&gt;&lt;a href=&quot;https://github.com/attebury/attepack&quot;&gt;Attepack&lt;/a&gt; is now open source.&lt;/p&gt;
+&lt;p&gt;I built it because the Forest tool stack kept converging on the same JSON packet shape without sharing the code that enforces it. Remogram emits forge facts. Waylane emits execution facts. Verigram emits work judgments. Atteway emits audit view models. They all need &lt;code&gt;type&lt;/code&gt;, &lt;code&gt;schema_version&lt;/code&gt;, &lt;code&gt;observed_at&lt;/code&gt;, and &lt;code&gt;ok&lt;/code&gt;. They all need stable error codes when something fails. Each repo was carrying its own copy of the envelope builder, or a partial copy, or a copy that had not caught up yet.&lt;/p&gt;
+&lt;p&gt;That is not a documentation problem. It is schema drift with extra steps. One tool adds provider attribution fields. Another tool forgets. A third tool puts the timestamp in a different place. Agent automation starts branching on three dialects of the same idea.&lt;/p&gt;
+&lt;h2 id=&quot;the-pattern&quot;&gt;The pattern&lt;/h2&gt;
+&lt;p&gt;Error output is the painful case. A command fails on a bad path or a missing config key. The error message includes a home directory path and a token that was in the environment. The packet says &lt;code&gt;ok: false&lt;/code&gt;, but the leak is already in &lt;code&gt;error_message&lt;/code&gt;. The agent logs the JSON and the secret leaves the workspace.&lt;/p&gt;
+&lt;p&gt;Mutation is the second case. A tool changes forge state or writes a local file. The CLI prints success prose. Nothing records what changed, what was intended, or whether readback matched. You cannot audit the action later except from shell history.&lt;/p&gt;
+&lt;p&gt;Facts versus diagnostics is the third case. A routing failure gets emitted with the same envelope as a forge fact. Downstream code treats a diagnostic event like merge authority. The boundary was never explicit in the packet shape.&lt;/p&gt;
+&lt;h2 id=&quot;what-attepack-is-for&quot;&gt;What Attepack is for&lt;/h2&gt;
+&lt;p&gt;Attepack holds the shared plumbing for JSON-first tools. Envelope build and validation. A single error code registry. Error message and detail cleaning through &lt;a href=&quot;https://github.com/attebury/atteguard&quot;&gt;Atteguard&lt;/a&gt; text-safety. Mutation receipts with digests and readback status. A separate diagnostic event builder that emits through &lt;code&gt;execFile&lt;/code&gt;, not a shell string.&lt;/p&gt;
+&lt;p&gt;It is a library. It does not contain your domain logic. Remogram still owns forge fact types. Waylane still owns execution facts. Attepack owns the envelope, the error shape, and the hygiene around both.&lt;/p&gt;
+&lt;h2 id=&quot;example&quot;&gt;Example&lt;/h2&gt;
+&lt;p&gt;A forge read fails because write commands are not configured. The tool should emit a structured error, not a string that echoes the config snippet and the workspace path.&lt;/p&gt;
+&lt;pre class=&quot;language-js&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-js&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; buildErrorPacket &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;attepack&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;token keyword&quot;&gt;const&lt;/span&gt; packet &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;buildErrorPacket&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;token literal-property property&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;example.forge_facts.v1&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+  &lt;span class=&quot;token literal-property property&quot;&gt;ok&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token boolean&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+  &lt;span class=&quot;token literal-property property&quot;&gt;errorCode&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;write_not_configured&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+  &lt;span class=&quot;token literal-property property&quot;&gt;errorMessage&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;Write command is not listed in config&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+  &lt;span class=&quot;token literal-property property&quot;&gt;providerId&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;gitea&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+  &lt;span class=&quot;token literal-property property&quot;&gt;remoteName&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;origin&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+  &lt;span class=&quot;token literal-property property&quot;&gt;repoId&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;owner/repo&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+  &lt;span class=&quot;token literal-property property&quot;&gt;details&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;token literal-property property&quot;&gt;write_command&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;cr_open&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;token literal-property property&quot;&gt;remediation&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;Add cr_open to write_commands in .example.json&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+  &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Attepack normalizes the error code, scrubs paths and secrets from messages and allowlisted detail fields, and keeps the envelope shape the same as a success packet. Automation can branch on &lt;code&gt;error_code&lt;/code&gt;. It does not need to parse prose.&lt;/p&gt;
+&lt;p&gt;Reads and writes stay different artifacts. Fact packets answer what the forge observed. Mutation receipts answer what changed and whether readback verified it. Diagnostic events answer what failed in command routing. Attepack gives each one a shape. Your tool still owns the policy of when a mutation is allowed.&lt;/p&gt;
+&lt;p&gt;Install steps, subpath exports, module layout, and API detail are in the README.&lt;/p&gt;
+&lt;p&gt;Start here: &lt;a href=&quot;https://github.com/attebury/attepack#readme&quot;&gt;github.com/attebury/attepack#readme&lt;/a&gt;&lt;/p&gt;
+</content>
+  </entry>
+  <entry>
+    <title>Atteguard: trust-decision primitives for agent tooling</title>
+    <link href="https://attebury.dev/blog/atteguard-open-source/" />
+    <updated>2026-07-26T00:00:00Z</updated>
+    <id>https://attebury.dev/blog/atteguard-open-source/</id>
+    <content type="html">&lt;p&gt;&lt;a href=&quot;https://github.com/attebury/atteguard&quot;&gt;Atteguard&lt;/a&gt; is now open source.&lt;/p&gt;
+&lt;p&gt;I built it after an adversarial security review across the Forest tool stack. The same bug shape kept appearing in different repos. The tool would have a real guard for a trust decision. Then a second path into the same decision would bypass it, or trust caller-supplied data, or use a shortcut that looked safe until you tested symlinks or flag injection.&lt;/p&gt;
+&lt;p&gt;That is not a team discipline problem. It is duplicated security code. Fix it in one tool. Reinvent it in the next. Break it again in a helper file six months later.&lt;/p&gt;
+&lt;h2 id=&quot;the-pattern&quot;&gt;The pattern&lt;/h2&gt;
+&lt;p&gt;Path containment is a common example. You write a check that keeps output inside a trusted root. A symlink inside the root points outside. A naive check resolves the candidate against itself and passes. The write still escapes.&lt;/p&gt;
+&lt;p&gt;Command execution is the same story. You allowlist argv in the main command path. A helper builds a shell string. A test fixture passes a ref that starts with &lt;code&gt;-&lt;/code&gt;. Git treats it as a flag.&lt;/p&gt;
+&lt;p&gt;Signing is the same story again. You verify a signature packet. The verifier reads the public key from the packet it is trying to verify. An attacker generates a key pair, signs arbitrary data, and embeds their own key. The check passes for the wrong reason.&lt;/p&gt;
+&lt;h2 id=&quot;what-atteguard-is-for&quot;&gt;What Atteguard is for&lt;/h2&gt;
+&lt;p&gt;Atteguard extracts the recurring fixes into one library. Path containment that survives symlinks. Secret scanning and redaction. Argv template allowlisting. Git ref validation before subprocess calls. Signature verification with a caller-supplied trusted key. An AST checker that compares &lt;code&gt;authority-claims.json&lt;/code&gt; to actual write call sites in source.&lt;/p&gt;
+&lt;p&gt;It is a library. It is not a CLI. It does not grant merge authority. It does not run release workflows. You import the module you need and wire it into your tool. Atteguard gives you the guard code. Your tool must still install that guard on every path that needs it.&lt;/p&gt;
+&lt;h2 id=&quot;example&quot;&gt;Example&lt;/h2&gt;
+&lt;p&gt;A tool exports files from a trusted workspace root. An agent supplies &lt;code&gt;work/report.json&lt;/code&gt;. The path looks lexically inside the root. The directory is a symlink to &lt;code&gt;/tmp&lt;/code&gt;.&lt;/p&gt;
+&lt;pre class=&quot;language-js&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-js&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; resolveContainedPath&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; resolveCanonicalRoot &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;atteguard/path-safety&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;token keyword&quot;&gt;const&lt;/span&gt; root &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;/path/to/trusted-workspace&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;const&lt;/span&gt; canonicalRoot &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;resolveCanonicalRoot&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;root&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;token keyword&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; canonical_path &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;resolveContainedPath&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;token literal-property property&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;report&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+  &lt;span class=&quot;token literal-property property&quot;&gt;candidatePath&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;work/report.json&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+  root&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+  canonicalRoot&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;token comment&quot;&gt;// use canonical_path for the read or write — not the raw agent string&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Without the second-phase check against the root&#39;s real path, the export looks protected when it is not.&lt;/p&gt;
+&lt;p&gt;Each module ships adversarial tests named &lt;code&gt;*.self-issued.test.js&lt;/code&gt;. Those tests encode the exploit the module was written to block. Pin an exact version. These are trust primitives. An old install can look safe when it is not.&lt;/p&gt;
+&lt;p&gt;Install steps, subpath exports, module examples, release policy, and API detail are in the README.&lt;/p&gt;
+&lt;p&gt;Start here: &lt;a href=&quot;https://github.com/attebury/atteguard#readme&quot;&gt;github.com/attebury/atteguard#readme&lt;/a&gt;&lt;/p&gt;
+</content>
+  </entry>
   <entry>
     <title>Remogram: forge state as JSON facts for agents</title>
     <link href="https://attebury.dev/blog/remogram-open-source/" />
@@ -395,57 +541,6 @@ topogram trace compare &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;
 &lt;p&gt;That future isn&#39;t guaranteed. Some domains need formal releases. Some teams will keep stack ownership because the cost of mistakes is high. Some work will always require deep specialist experience.&lt;/p&gt;
 &lt;p&gt;But if software work keeps compressing, the team may stop asking, &amp;quot;Which stack team owns this?&amp;quot;&lt;/p&gt;
 &lt;p&gt;It may start asking, &amp;quot;What wave are we in, who is strongest for this part, and what proof makes the change true?&amp;quot;&lt;/p&gt;
-</content>
-  </entry>
-  <entry>
-    <title>When Software Work Gets Shopified</title>
-    <link href="https://attebury.dev/blog/when-software-work-gets-shopified/" />
-    <updated>2026-05-28T00:00:00Z</updated>
-    <id>https://attebury.dev/blog/when-software-work-gets-shopified/</id>
-    <content type="html">&lt;p&gt;AI can feel like a break from software history, but I think it&#39;s more useful to see it as a continuation.&lt;/p&gt;
-&lt;p&gt;We&#39;ve been compressing roles for decades. We used to pay one person to design a website, another to code it, another to wire forms, another to publish content, and another to keep the stack running. Then blogs, CMS tools, hosted site builders, and services like Shopify absorbed large parts of that work.&lt;/p&gt;
-&lt;p&gt;The work didn&#39;t disappear. It moved into platforms.&lt;/p&gt;
-&lt;p&gt;Design became themes and systems. Content publishing became an editor. Commerce became a configured service. Hosting became a deploy button. A single operator could do work that once required a small web team.&lt;/p&gt;
-&lt;p&gt;AI may do something similar to software development.&lt;/p&gt;
-&lt;h2 id=&quot;role-compression-is-the-pattern&quot;&gt;Role compression is the pattern&lt;/h2&gt;
-&lt;p&gt;The important pattern isn&#39;t replacement. It&#39;s compression.&lt;/p&gt;
-&lt;p&gt;When platforms mature, they package repeated work into defaults, workflows, and constraints. The old specialist work becomes a product surface. A smaller team can operate at a higher level.&lt;/p&gt;
-&lt;p&gt;That&#39;s what happened to many websites. The average business no longer needs a dedicated designer, front-end developer, back-end developer, hosting operator, and analytics consultant just to sell products online. Shopify compressed much of that into a service.&lt;/p&gt;
-&lt;p&gt;AI can compress software work in a similar way:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Scaffolding becomes a prompt or template.&lt;/li&gt;
-&lt;li&gt;Boilerplate implementation becomes generated code.&lt;/li&gt;
-&lt;li&gt;Refactoring becomes an agent task.&lt;/li&gt;
-&lt;li&gt;Test creation becomes a guided loop.&lt;/li&gt;
-&lt;li&gt;Documentation updates become part of the change.&lt;/li&gt;
-&lt;li&gt;Design translation becomes a conversation with constraints.&lt;/li&gt;
-&lt;li&gt;Investigation becomes a context query instead of hours of repo reading.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;If that&#39;s accurate, entire areas of software development will get platformed. Not all of software, and not all of engineering judgment. But many repeated slices of implementation, maintenance, migration, and glue work will get absorbed into tools and workflows we haven&#39;t fully named yet.&lt;/p&gt;
-&lt;h2 id=&quot;what-teams-might-look-like&quot;&gt;What teams might look like&lt;/h2&gt;
-&lt;p&gt;Smaller teams may cover more surface area.&lt;/p&gt;
-&lt;p&gt;One person may own product shape, user experience, and implementation for a bounded feature. Another may own platform rules, security posture, release quality, and proof. A designer may work directly with generated components and semantic UI contracts. A domain expert may author workflows and acceptance criteria that agents turn into code.&lt;/p&gt;
-&lt;p&gt;The team becomes less like a row of specialists passing tickets downstream and more like a small group of operators coordinating systems.&lt;/p&gt;
-&lt;p&gt;That doesn&#39;t make engineering easier. It changes where the difficulty lives.&lt;/p&gt;
-&lt;p&gt;The hard parts move from reading requirements and typing code to choosing intent, setting boundaries, reviewing generated work, proving behavior, and keeping the system coherent through time.&lt;/p&gt;
-&lt;p&gt;In that world, the riskiest gap isn&#39;t whether an agent can produce code. The risk is whether the agent is changing the right thing for the right reason, in the right part of the system, with the right proof.&lt;/p&gt;
-&lt;h2 id=&quot;where-ai-needs-structure&quot;&gt;Where AI needs structure&lt;/h2&gt;
-&lt;p&gt;AI coding tools are good at local transformation. They edit files, write tests, explain code, and propose refactors. They&#39;re less reliable when the work depends on product intent, ownership, unstated decisions, or system boundaries.&lt;/p&gt;
-&lt;p&gt;That&#39;s where role compression gets messy.&lt;/p&gt;
-&lt;p&gt;If one person uses AI to do the work of several roles, that person needs more than a faster editor. They need a way to keep the compressed roles from blending together into guesses.&lt;/p&gt;
-&lt;p&gt;The product decision shouldn&#39;t disappear into the implementation. The implementation shouldn&#39;t invent the contract. The contract shouldn&#39;t ignore proof. Proof shouldn&#39;t be an afterthought.&lt;/p&gt;
-&lt;p&gt;AI makes those separations more important, not less.&lt;/p&gt;
-&lt;h2 id=&quot;what-we-still-have-to-carry&quot;&gt;What we still have to carry&lt;/h2&gt;
-&lt;p&gt;I&#39;ve been building tools for agentic development partly because of this compression. When fewer people cover more roles, the team needs durable answers to boring questions:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;What should be true after this change?&lt;/li&gt;
-&lt;li&gt;Who owns this boundary?&lt;/li&gt;
-&lt;li&gt;What proof counts as done?&lt;/li&gt;
-&lt;li&gt;What context is safe to give an agent, and what is only evidence?&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;You can answer those in tickets, chat, and memory for a while. Then the team moves faster and the answers stop matching the code.&lt;/p&gt;
-&lt;p&gt;Compressed teams still need a map of what they&#39;re building. AI can help produce the code. We still have to know what should be true, who owns it, what rules apply, and how to prove the change is done.&lt;/p&gt;
-&lt;p&gt;That&#39;s not a product pitch. It&#39;s the problem I&#39;m working in.&lt;/p&gt;
 </content>
   </entry>
 </feed>

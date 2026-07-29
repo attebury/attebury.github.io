@@ -3,8 +3,8 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>One Graph, Many Native Surfaces</title>
-		<meta name="description" content="AI may change cross-platform app development from one UI framework to one product graph with native surface outputs.">
+		<title>Atteguard: trust-decision primitives for agent tooling</title>
+		<meta name="description" content="Atteguard is an open source library of shared security code for CLI tools and agent tools.">
 		<link rel="alternate" href="/feed/feed.xml" type="application/atom+xml" title="Attebury">
 		
 		
@@ -499,82 +499,47 @@ pre[class*="language-diff-"] {
 				
 
 
-<h1 id="one-graph-many-native-surfaces">One Graph, Many Native Surfaces</h1>
+<h1 id="atteguard-trust-decision-primitives-for-agent-tooling">Atteguard: trust-decision primitives for agent tooling</h1>
 
 <ul class="post-metadata">
-	<li><time datetime="2026-05-30">30 May 2026</time></li>
+	<li><time datetime="2026-07-26">26 July 2026</time></li>
+	<li><a href="/tags/open-source/" class="post-tag">open-source</a>, </li>
 	<li><a href="/tags/agentic-development/" class="post-tag">agentic-development</a>, </li>
-	<li><a href="/tags/field-notes/" class="post-tag">field-notes</a></li>
+	<li><a href="/tags/tools/" class="post-tag">tools</a>, </li>
+	<li><a href="/tags/security/" class="post-tag">security</a>, </li>
+	<li><a href="/tags/atteguard/" class="post-tag">atteguard</a></li>
 </ul>
 
-<p>Cross-platform frameworks have always chased a hard promise: build once, reach many platforms.</p>
-<p>Frameworks like .NET MAUI, Flutter, React Native, and earlier hybrid stacks try to reduce the cost of shipping web, iOS, Android, and desktop apps. They package platform differences behind shared code, shared components, or shared runtime layers.</p>
-<p>That has real value.</p>
-<p>But AI may change the thing we most need to share.</p>
-<p>If agents can produce more of the implementation, the most valuable shared asset may not be one UI framework.</p>
-<p>It may be one product graph.</p>
-<h2 id="shared-code-is-not-shared-intent">Shared code is not shared intent</h2>
-<p>Shared code solves a real problem. It reduces duplication. It keeps business logic from being rewritten four times. It can help a company ship a mobile app without building separate native teams from scratch.</p>
-<p>But shared code also creates pressure.</p>
-<p>The app may feel less native. Navigation may get awkward. Accessibility, gestures, offline behavior, and performance may not line up cleanly across targets. The team can spend as much time working around the abstraction as using it.</p>
-<p>That doesn't mean cross-platform frameworks are wrong.</p>
-<p>It means shared code is not shared product intent.</p>
-<p>The better question is: what should actually be shared?</p>
-<h2 id="the-shared-layer-may-move-up">The shared layer may move up</h2>
-<p>The useful shared layer may move above the UI framework.</p>
-<p>Instead of asking one framework to make every platform feel right, teams may ask one graph to describe what should stay true.</p>
-<p>The graph should answer:</p>
-<ul>
-<li>Which capabilities exist.</li>
-<li>Which entities and workflows matter.</li>
-<li>Which surfaces users need.</li>
-<li>Which widgets and states belong on each surface.</li>
-<li>Which rules constrain behavior.</li>
-<li>Which accessibility and localization promises apply.</li>
-<li>Which proof says the experience works.</li>
-</ul>
-<p>From there, agents or generators could produce different native outputs.</p>
-<p>The web app could use web-native patterns. The iOS app could use iOS-native navigation and controls. The Android app could use Android-native conventions. The desktop app could use desktop affordances.</p>
-<p>The shared layer wouldn't be a lowest-common-denominator UI. It would be the product map.</p>
-<h2 id="agents-may-work-better-natively">Agents may work better natively</h2>
-<p>An agent working on an iOS app may be more effective in a native iOS environment than inside a generic cross-platform abstraction. The compiler, simulator, platform APIs, accessibility tools, and design conventions all give the agent stronger feedback.</p>
-<p>The same may be true on Android, desktop, and web.</p>
-<p>The agent doesn't have to guess whether a custom abstraction maps cleanly to the platform. It can work with the platform directly. It can run platform-specific tests. It can inspect native warnings. It can use native components the way a human specialist would.</p>
-<p>But that only works if the agent has a shared source of intent.</p>
-<p>Without one, every native surface becomes its own interpretation of the product. The iOS app drifts. The web app drifts. The Android app drifts. Desktop becomes the odd surface nobody quite trusts.</p>
-<p>Native output is powerful only if we can keep the product coherent.</p>
-<h2 id="one-graph-many-native-surfaces-2">One graph, many native surfaces</h2>
-<p>The possible shape is one graph, many native surfaces.</p>
-<p>The graph describes the product. Each surface implements that product in the right platform language.</p>
-<p>That could mean:</p>
-<ul>
-<li>One capability appears on web, iOS, Android, and desktop.</li>
-<li>Each platform gets native layout, navigation, and interaction patterns.</li>
-<li>Shared rules define behavior, not pixels.</li>
-<li>Surface records describe what each platform owes the user.</li>
-<li>Agents generate or maintain platform-specific code from the same intent.</li>
-<li>Reviewers compare each output against the graph and proof.</li>
-</ul>
-<p>This isn't write once, run everywhere.</p>
-<p>It's closer to spec once, realize everywhere.</p>
-<p>The implementation can differ. The product contract should not.</p>
-<h2 id="what-happens-to-net-maui">What happens to .NET MAUI</h2>
-<p>This isn't an argument that .NET MAUI goes away.</p>
-<p>Frameworks like .NET MAUI solve real problems. Some teams want a unified codebase. Some apps are similar enough across platforms that one framework is the right tradeoff. Some organizations would rather accept platform compromises than staff multiple native surfaces.</p>
-<p>AI doesn't erase that.</p>
-<p>But it may create another path.</p>
-<p>A team may not need one cross-platform UI layer for every target if agents can help maintain several native targets from the same product graph.</p>
-<p>That changes the tradeoff.</p>
-<p>The question may stop being: which framework lets us share the most code?</p>
-<p>It may become: which shared graph lets us keep the most product coherence while each platform stays native?</p>
-<h2 id="a-possible-shape">A possible shape</h2>
-<p>If AI keeps lowering the cost of implementation, cross-platform development may become less about one runtime and more about one coordinated source of truth.</p>
-<p>Some teams will still use frameworks like .NET MAUI because shared code is the right constraint. Others may choose native surfaces because agents can carry more of the implementation load.</p>
-<p>In that world, the valuable asset isn't just the app code. It's the graph that tells every surface what should stay true.</p>
-<p>The future may not be one app that runs everywhere.</p>
-<p>It may be one product map that helps every surface feel like it belongs.</p>
+<p><a href="https://github.com/attebury/atteguard">Atteguard</a> is now open source.</p>
+<p>I built it after an adversarial security review across the Forest tool stack. The same bug shape kept appearing in different repos. The tool would have a real guard for a trust decision. Then a second path into the same decision would bypass it, or trust caller-supplied data, or use a shortcut that looked safe until you tested symlinks or flag injection.</p>
+<p>That is not a team discipline problem. It is duplicated security code. Fix it in one tool. Reinvent it in the next. Break it again in a helper file six months later.</p>
+<h2 id="the-pattern">The pattern</h2>
+<p>Path containment is a common example. You write a check that keeps output inside a trusted root. A symlink inside the root points outside. A naive check resolves the candidate against itself and passes. The write still escapes.</p>
+<p>Command execution is the same story. You allowlist argv in the main command path. A helper builds a shell string. A test fixture passes a ref that starts with <code>-</code>. Git treats it as a flag.</p>
+<p>Signing is the same story again. You verify a signature packet. The verifier reads the public key from the packet it is trying to verify. An attacker generates a key pair, signs arbitrary data, and embeds their own key. The check passes for the wrong reason.</p>
+<h2 id="what-atteguard-is-for">What Atteguard is for</h2>
+<p>Atteguard extracts the recurring fixes into one library. Path containment that survives symlinks. Secret scanning and redaction. Argv template allowlisting. Git ref validation before subprocess calls. Signature verification with a caller-supplied trusted key. An AST checker that compares <code>authority-claims.json</code> to actual write call sites in source.</p>
+<p>It is a library. It is not a CLI. It does not grant merge authority. It does not run release workflows. You import the module you need and wire it into your tool. Atteguard gives you the guard code. Your tool must still install that guard on every path that needs it.</p>
+<h2 id="example">Example</h2>
+<p>A tool exports files from a trusted workspace root. An agent supplies <code>work/report.json</code>. The path looks lexically inside the root. The directory is a symlink to <code>/tmp</code>.</p>
+<pre class="language-js" tabindex="0"><code class="language-js"><span class="token keyword">import</span> <span class="token punctuation">{</span> resolveContainedPath<span class="token punctuation">,</span> resolveCanonicalRoot <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"atteguard/path-safety"</span><span class="token punctuation">;</span>
 
-<ul class="links-nextprev"><li class="links-nextprev-prev">← Previous<br> <a href="/blog/feature-waves-not-big-releases/">Feature Waves, Not Big Releases</a></li><li class="links-nextprev-next">Next →<br><a href="/blog/prompt-injection-is-a-boundary-problem/">Prompt Injection Is a Boundary Problem</a></li>
+<span class="token keyword">const</span> root <span class="token operator">=</span> <span class="token string">"/path/to/trusted-workspace"</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> canonicalRoot <span class="token operator">=</span> <span class="token function">resolveCanonicalRoot</span><span class="token punctuation">(</span>root<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> <span class="token punctuation">{</span> canonical_path <span class="token punctuation">}</span> <span class="token operator">=</span> <span class="token function">resolveContainedPath</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+  <span class="token literal-property property">name</span><span class="token operator">:</span> <span class="token string">"report"</span><span class="token punctuation">,</span>
+  <span class="token literal-property property">candidatePath</span><span class="token operator">:</span> <span class="token string">"work/report.json"</span><span class="token punctuation">,</span>
+  root<span class="token punctuation">,</span>
+  canonicalRoot<span class="token punctuation">,</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// use canonical_path for the read or write — not the raw agent string</span></code></pre>
+<p>Without the second-phase check against the root's real path, the export looks protected when it is not.</p>
+<p>Each module ships adversarial tests named <code>*.self-issued.test.js</code>. Those tests encode the exploit the module was written to block. Pin an exact version. These are trust primitives. An old install can look safe when it is not.</p>
+<p>Install steps, subpath exports, module examples, release policy, and API detail are in the README.</p>
+<p>Start here: <a href="https://github.com/attebury/atteguard#readme">github.com/attebury/atteguard#readme</a></p>
+
+<ul class="links-nextprev"><li class="links-nextprev-prev">← Previous<br> <a href="/blog/remogram-open-source/">Remogram: forge state as JSON facts for agents</a></li><li class="links-nextprev-next">Next →<br><a href="/blog/attepack-open-source/">Attepack: shared packet envelopes for JSON-first tools</a></li>
 </ul>
 
 			</heading-anchors>
@@ -584,7 +549,7 @@ pre[class*="language-diff-"] {
 			<p>&copy; 2026 Attebury · <a href="https://www.linkedin.com/in/attebury/?skipRedirect=true">LinkedIn</a></p>
 		</footer>
 
-		<!-- This page `/blog/one-graph-many-native-surfaces/` was built on 2026-07-29T05:29:07.171Z -->
+		<!-- This page `/blog/atteguard-open-source/` was built on 2026-07-29T05:29:07.170Z -->
 		<script type="module" src="/dist/cC8wS6ZjFU.js"></script>
 	</body>
 </html>

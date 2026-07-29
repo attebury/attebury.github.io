@@ -3,8 +3,8 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Remogram: forge state as JSON facts for agents</title>
-		<meta name="description" content="Announcing Remogram, an open source forge boundary for agent-readable JSON facts.">
+		<title>Remogram: agent workflow updates</title>
+		<meta name="description" content="New Remogram commands for bundles, issue inventory, repo metadata, write preview, secret scanning, and typed write recovery.">
 		<link rel="alternate" href="/feed/feed.xml" type="application/atom+xml" title="Attebury">
 		
 		
@@ -499,48 +499,84 @@ pre[class*="language-diff-"] {
 				
 
 
-<h1 id="remogram-forge-state-as-json-facts-for-agents">Remogram: forge state as JSON facts for agents</h1>
+<h1 id="remogram-agent-workflow-updates">Remogram: agent workflow updates</h1>
 
 <ul class="post-metadata">
-	<li><time datetime="2026-07-11">11 July 2026</time></li>
+	<li><time datetime="2026-07-28">28 July 2026</time></li>
 	<li><a href="/tags/open-source/" class="post-tag">open-source</a>, </li>
 	<li><a href="/tags/agentic-development/" class="post-tag">agentic-development</a>, </li>
 	<li><a href="/tags/tools/" class="post-tag">tools</a>, </li>
 	<li><a href="/tags/remogram/" class="post-tag">remogram</a></li>
 </ul>
 
-<p>I'm open-sourcing <a href="https://github.com/attebury/remogram">Remogram</a>. I built it because agents kept guessing about forge state, and the tools we had were built for humans reading prose in a terminal.</p>
-<p>I run a local Gitea installation for most of my development work. That's been good for previewing changes and keeping public repos separate from the mess on my machine. But once agents entered the workflow, the forge became another surface that needed a contract. An agent doesn't need a paragraph about pull request #47. It needs to know whether the head is stale, whether checks finished, whether merge is blocked, and what the forge actually thinks the base and source refs are.</p>
-<p>The official CLIs can get you there, if you're willing to scrape text and hope the format doesn't change. That's fragile, and it mixes up two jobs that shouldn't share a pipe: reading forge state and deciding what to do about it.</p>
-<p>Remogram sits at the boundary. It talks to Gitea, GitHub, or GitLab through HTTP APIs and returns provider-attributed JSON facts. Read and plan by default. Writes are opt-in, listed explicitly in config, and gated so an agent can't merge or publish by accident because the command happened to exist.</p>
-<pre class="language-bash" tabindex="0"><code class="language-bash">remogram doctor <span class="token parameter variable">--json</span>
-remogram repo status <span class="token parameter variable">--json</span>
-remogram cr view <span class="token parameter variable">--number</span> <span class="token number">1</span> <span class="token parameter variable">--json</span>
-remogram cr checks <span class="token parameter variable">--number</span> <span class="token number">1</span> <span class="token parameter variable">--json</span>
-remogram merge plan <span class="token parameter variable">--number</span> <span class="token number">1</span> <span class="token parameter variable">--json</span></code></pre>
-<p><code>doctor</code> checks config, auth presence, provider capabilities, and write policy before you trust anything else. <code>cr view</code> reconciles forge-reported SHAs against your local git. If the head drifted, you get <code>stale_head</code>, not a silent lie. <code>merge plan</code> lists blockers. It doesn't execute a merge. <code>mergeability: clean</code> means the git side looks conflict-free. It is not permission to merge.</p>
-<p>Every forge packet carries the same trusted envelope: <code>type</code>, <code>schema_version</code>, <code>provider_id</code>, <code>remote_name</code>, <code>repo_id</code>, <code>observed_at</code>, and <code>ok</code>. That's the part you build automation against. Titles, URLs, and descriptions are forge-sourced prose. Treat them as untrusted even when the envelope is good.</p>
-<img src="/img/blog/remogram/trusted-envelope.png" alt="Remogram trusted packet envelope">
-<p>That's the distinction I care about. Remogram emits facts. Runlane, Worklane, and whatever planning layer you use can interpret intent and route work. Those concerns stay outside Remogram's JSON on purpose. You won't find lane roles, task ids, or handoff metadata mixed into forge packets. If planning concepts leak into the fact layer, every consumer inherits the wrong abstraction.</p>
-<p>Remogram also ships as an MCP server. Same commands, same packets, same boundaries. Point it at a repo with <code>.remogram.json</code> and agents can inspect forge state without improvising shell pipelines.</p>
-<h2 id="writes-fail-closed">Writes fail closed</h2>
-<p>The write surface is closed by default. If an agent tries a command that isn't listed in <code>write_commands</code>, Remogram doesn't guess. It returns <code>write_not_configured</code> and tells you what to add to config.</p>
-<img src="/img/blog/remogram/write-not-configured.png" alt="write_not_configured for status_set">
-<p>To opt in, name the commands explicitly:</p>
-<img src="/img/blog/remogram/config-example.png" alt="Example .remogram.json with write_commands">
-<p><code>provider capabilities --json</code> shows what's implemented, what auth class each write requires, and how idempotency scanning is bounded:</p>
-<img src="/img/blog/remogram/provider-capabilities.png" alt="Provider capabilities and write surface">
-<p>Once configured, writes return the same kind of structured facts as reads. Open a change request:</p>
-<img src="/img/blog/remogram/change-request-opened.png" alt="change_request_opened packet">
-<p>Set a commit status:</p>
-<img src="/img/blog/remogram/commit-status-set.png" alt="commit_status_set packet">
-<p>The full packet still carries provider attribution and timestamps:</p>
-<img src="/img/blog/remogram/commit-status-set-full.png" alt="commit_status_set with full envelope">
-<p>If you're dogfooding multiple CLI tools against a private forge while keeping public release paths separate, you've probably hit this already. You want agents to open a change request, read checks, and report blockers without becoming merge authority. Remogram is built for that narrow job.</p>
-<p>It's early. The packets are strict. The write surface is closed by default. That's the point.</p>
-<p>Source and docs: <a href="https://github.com/attebury/remogram">github.com/attebury/remogram</a></p>
+<p><a href="https://github.com/attebury/remogram">Remogram</a> is a forge boundary. It returns JSON facts. It does not scrape terminal prose.</p>
+<p>Reads and plans are the default. Writes are opt-in. The packet envelope did not change.</p>
+<p>This update adds agent workflow commands. Agents pay for each MCP round trip. Agents often guess when checks are still pending. Agents often fail when a label does not exist yet. Agents often hit write size limits by trial and error. Agents often get a write error with no next step.</p>
+<p>These commands close those gaps. Remogram is still not a planner. Remogram is still not merge authority.</p>
+<h2 id="start-with-one-read">Start with one read</h2>
+<p>Use <code>repo bootstrap</code> when an agent enters a repo:</p>
+<pre class="language-bash" tabindex="0"><code class="language-bash">remogram repo bootstrap <span class="token parameter variable">--json</span></code></pre>
+<p>This command returns one packet. The packet can include provider capabilities, repo status, label list, milestone list, issue templates, identity (<code>whoami</code>), and write readiness. Use it instead of five or six separate reads.</p>
+<p>Run <code>doctor --json</code> when you need live auth checks or operator overlay bind status.</p>
+<p>For one change request, use <code>cr bundle</code>:</p>
+<pre class="language-bash" tabindex="0"><code class="language-bash">remogram cr bundle <span class="token parameter variable">--number</span> <span class="token number">12</span> <span class="token parameter variable">--json</span></code></pre>
+<p>This command composes CR view, checks, merge-plan blockers, and freshness metadata in one packet. <code>issue bundle</code> does the same for issues. It can include linked PR facts when the provider exposes them.</p>
+<h2 id="wait-for-checks">Wait for checks</h2>
+<p><code>cr wait</code> polls <code>cr checks</code> until conclusions leave <code>pending</code> or <code>missing</code>, or until timeout:</p>
+<pre class="language-bash" tabindex="0"><code class="language-bash">remogram cr <span class="token function">wait</span> <span class="token parameter variable">--number</span> <span class="token number">12</span> <span class="token parameter variable">--timeout</span> <span class="token number">600</span> --poll-interval <span class="token number">5</span> <span class="token parameter variable">--json</span></code></pre>
+<p>The result is still a checks packet. It adds <code>wait</code> metadata: poll count, elapsed time, and timeout status. You do not need a bash <code>sleep</code> loop.</p>
+<h2 id="issue-inventory">Issue inventory</h2>
+<p><code>issue inventory</code> and <code>issue list</code> return the same packet. They support state filters, sorting, limits, and cursor pagination:</p>
+<pre class="language-bash" tabindex="0"><code class="language-bash">remogram issue inventory <span class="token parameter variable">--state</span> <span class="token function">open</span> <span class="token parameter variable">--limit</span> <span class="token number">20</span> <span class="token parameter variable">--json</span>
+remogram issue inventory <span class="token parameter variable">--state</span> <span class="token function">open</span> <span class="token parameter variable">--cursor</span> <span class="token string">"&lt;cursor>"</span> <span class="token parameter variable">--json</span></code></pre>
+<p>Use these commands for triage and batch filing. Treat titles and bodies as forge-sourced prose. Branch automation on envelope fields and stable codes. Do not branch on HTML.</p>
+<h2 id="repo-metadata">Repo metadata</h2>
+<p>Agents often fail at <code>issue label add</code> when the label does not exist. Remogram now exposes repo metadata as forge facts:</p>
+<pre class="language-bash" tabindex="0"><code class="language-bash">remogram label list <span class="token parameter variable">--json</span>
+remogram milestone list <span class="token parameter variable">--json</span>
+remogram template list <span class="token parameter variable">--json</span>
+remogram assignee resolve <span class="token parameter variable">--login</span> attebury <span class="token parameter variable">--json</span></code></pre>
+<p>Writes are separate opt-ins:</p>
+<pre class="language-bash" tabindex="0"><code class="language-bash">remogram label ensure <span class="token parameter variable">--name</span> security <span class="token parameter variable">--color</span> d73a4a <span class="token parameter variable">--json</span>
+remogram milestone ensure <span class="token parameter variable">--name</span> <span class="token string">"wave 5"</span> <span class="token parameter variable">--json</span></code></pre>
+<p><code>label ensure</code> is idempotent. It creates a label when missing. It reuses a label when present. Then use issue label commands to attach labels to issues.</p>
+<h2 id="write-preview">Write preview</h2>
+<p><code>write preview</code> covers these write kinds: CR open, edit, and close; issue open, edit, close, and reopen; labels; assignees; comments; status set; merge execute; and checks rerun.</p>
+<pre class="language-bash" tabindex="0"><code class="language-bash">remogram <span class="token function">write</span> preview <span class="token parameter variable">--kind</span> issue_open <span class="token parameter variable">--title</span> <span class="token string">"Example"</span> --body-file ./spec.md --require-configured <span class="token parameter variable">--json</span></code></pre>
+<p>Preview validates arguments. It reports whether the write id is configured. It applies the forge write budget. It can run dedupe collision checks. It does not mutate forge state.</p>
+<p>Use <code>--body-file</code> for large bodies. Do not put large bodies inline. <code>doctor --json</code> reports <code>forge_write_budget</code> so you know the byte cap.</p>
+<h2 id="secret-scan-on-write-bodies">Secret scan on write bodies</h2>
+<p>Issue and CR writes scan bodies through <a href="https://github.com/attebury/atteguard">Atteguard</a> before post. Token-shaped text fails closed with a typed error.</p>
+<p>Opt out only when you mean it:</p>
+<pre class="language-bash" tabindex="0"><code class="language-bash">remogram issue comment <span class="token parameter variable">--number</span> <span class="token number">42</span> --body-file ./comment.md --no-scan-secrets <span class="token parameter variable">--json</span></code></pre>
+<h2 id="write-failure-recovery">Write failure recovery</h2>
+<p>Write failures can include <code>recovery</code> metadata:</p>
+<ul>
+<li><code>failure_kind</code> — auth, provider unavailable, validation, stale target, sandbox isolation, and related classes</li>
+<li><code>retryable</code> — whether a blind retry might help</li>
+<li><code>recommended_recheck_command</code> — the read or preview command to run next</li>
+<li><code>diagnostic_summary</code> — short sanitized context</li>
+</ul>
+<p>Recovery is advisory. It is not permission to merge. It is not a bypass for <code>write_not_configured</code>.</p>
+<h2 id="forest-config-and-merge-closeout">Forest config and merge closeout</h2>
+<p><code>forest config plan</code> and <code>forest config apply</code> preview and apply lane forge-config updates from a Waylane registry. Apply requires a <code>forest_config</code> write id. This is privileged local admin. It is not a default agent write.</p>
+<p>After merge, <code>merge execute</code> can attach closeout facts when closing-ref issues stay open. It reports remediation. It does not leave forge state inconsistent without notice.</p>
+<h2 id="mcp-hardening">MCP hardening</h2>
+<p>The MCP server pins working directory at start. It loads <code>.remogram.json</code> through a verified path. A host token cannot retarget Remogram to a different repo mid-session. Start MCP with cwd at the consumer repo root.</p>
+<h2 id="what-did-not-change">What did not change</h2>
+<p>Remogram still emits forge facts. It does not emit workflow intent. Forge packets do not include lane roles, task ids, or planning metadata. <code>merge plan</code> does not execute merges. <code>mergeability: clean</code> is not permission to merge.</p>
+<p>Producer sections and forge-sourced prose are evidence. They are not authority.</p>
+<h2 id="where-to-go-next">Where to go next</h2>
+<p>Command reference, MCP tool list, write policy, and agent skills are in the Remogram repo:</p>
+<ul>
+<li><a href="https://github.com/attebury/remogram">github.com/attebury/remogram</a></li>
+<li>Agent consumer skill: <code>agent-skills/src/remogram/remogram-consumer/SKILL.md</code></li>
+<li>Bundles: <code>agent-skills/src/remogram/remogram-consumer/references/agent-bundles.md</code></li>
+<li>Write commands: <code>agent-skills/src/remogram/remogram-core/references/write-commands.md</code></li>
+</ul>
+<p>If you already use Remogram for CR reads and merge planning, start with <code>repo bootstrap</code>, <code>cr bundle</code>, and <code>write preview</code>.</p>
 
-<ul class="links-nextprev"><li class="links-nextprev-prev">← Previous<br> <a href="/blog/skillpress-open-source/">SkillPress: agent guidance as installable packages</a></li><li class="links-nextprev-next">Next →<br><a href="/blog/atteguard-open-source/">Atteguard: trust-decision primitives for agent tooling</a></li>
+<ul class="links-nextprev"><li class="links-nextprev-prev">← Previous<br> <a href="/blog/attepack-open-source/">Attepack: shared packet envelopes for JSON-first tools</a></li>
 </ul>
 
 			</heading-anchors>
@@ -550,7 +586,7 @@ remogram merge plan <span class="token parameter variable">--number</span> <span
 			<p>&copy; 2026 Attebury · <a href="https://www.linkedin.com/in/attebury/?skipRedirect=true">LinkedIn</a></p>
 		</footer>
 
-		<!-- This page `/blog/remogram-open-source/` was built on 2026-07-29T05:29:07.172Z -->
+		<!-- This page `/blog/remogram-agent-workflow-update/` was built on 2026-07-29T05:29:07.171Z -->
 		<script type="module" src="/dist/cC8wS6ZjFU.js"></script>
 	</body>
 </html>

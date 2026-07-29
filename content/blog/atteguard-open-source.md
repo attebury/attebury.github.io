@@ -13,8 +13,6 @@ tags:
 
 I built Atteguard after a security review of the Forest tool stack. The same defect type appeared in many repositories. A tool had a real guard for a trust decision. Then a second path into the same decision did not use the guard. The second path trusted data from the caller. Or the second path used a short check that failed when a symlink or a flag injection was present.
 
-This is not a team process problem. This is shared security code that each tool copies. You repair the defect in one tool. You write the same code again in the next tool. You break the same rule again in a helper file later.
-
 ## The pattern
 
 Path containment is one example. You write a check that keeps output inside a trusted root. A symlink inside the root points outside the root. A weak check compares the candidate path to itself and accepts it. The write still leaves the root.

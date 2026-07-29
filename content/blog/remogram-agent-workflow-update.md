@@ -8,31 +8,35 @@ tags:
   - tools
   - remogram
 ---
-[Remogram](https://github.com/attebury/remogram) started as a forge boundary: JSON facts in, prose scraping out. That part has not changed. Reads and plans stay the default. Writes stay opt-in. The trusted envelope is still the contract.
+[Remogram](https://github.com/attebury/remogram) is a forge boundary. It returns JSON facts. It does not scrape terminal prose.
 
-What changed is the agent workflow around it. Agents pay for every MCP round trip. They guess when checks are still pending. They open issues before labels exist. They trial-and-error large write bodies until the forge rejects them. They get a 422 and do not know which read command to run next.
+Reads and plans are the default. Writes are opt-in. The packet envelope did not change.
 
-This update closes those gaps without turning Remogram into a planner or a merge authority.
+This update adds agent workflow commands. Agents pay for each MCP round trip. Agents often guess when checks are still pending. Agents often fail when a label does not exist yet. Agents often hit write size limits by trial and error. Agents often get a write error with no next step.
+
+These commands close those gaps. Remogram is still not a planner. Remogram is still not merge authority.
 
 ## Start with one read
 
-`repo bootstrap` composes the preflight agents should run before they trust anything else:
+Use `repo bootstrap` when an agent enters a repo:
 
 ```bash
 remogram repo bootstrap --json
 ```
 
-The packet combines provider capabilities, repo status, label and milestone lists, issue templates, identity (`whoami`), and write readiness in one call. Use it instead of chaining five or six separate reads when an agent enters a repo cold. Run `doctor --json` separately when you need live auth checks or operator overlay bind status.
+This command returns one packet. The packet can include provider capabilities, repo status, label list, milestone list, issue templates, identity (`whoami`), and write readiness. Use it instead of five or six separate reads.
 
-For a single change request, prefer `cr bundle` over ad-hoc scripts:
+Run `doctor --json` when you need live auth checks or operator overlay bind status.
+
+For one change request, use `cr bundle`:
 
 ```bash
 remogram cr bundle --number 12 --json
 ```
 
-It composes CR view, checks, merge-plan blockers, and freshness metadata in one forge-backed packet. `issue bundle` does the same for issues, including linked PR facts when the provider exposes them.
+This command composes CR view, checks, merge-plan blockers, and freshness metadata in one packet. `issue bundle` does the same for issues. It can include linked PR facts when the provider exposes them.
 
-## Wait for checks without a shell loop
+## Wait for checks
 
 `cr wait` polls `cr checks` until conclusions leave `pending` or `missing`, or until timeout:
 
@@ -40,22 +44,22 @@ It composes CR view, checks, merge-plan blockers, and freshness metadata in one 
 remogram cr wait --number 12 --timeout 600 --poll-interval 5 --json
 ```
 
-The result is still a checks packet. It adds bounded `wait` metadata: polls, elapsed time, whether the wait timed out. Agents stop improvising `sleep` loops in bash.
+The result is still a checks packet. It adds `wait` metadata: poll count, elapsed time, and timeout status. You do not need a bash `sleep` loop.
 
-## Issue inventory that agents can actually use
+## Issue inventory
 
-`issue inventory` and `issue list` (same packet) now support state filters, sorting, limits, and cursor pagination:
+`issue inventory` and `issue list` return the same packet. They support state filters, sorting, limits, and cursor pagination:
 
 ```bash
 remogram issue inventory --state open --limit 20 --json
 remogram issue inventory --state open --cursor "<cursor>" --json
 ```
 
-Use this for triage and batch filing. Treat titles and bodies as forge-sourced prose. Branch automation on envelope fields and stable codes, not on HTML.
+Use these commands for triage and batch filing. Treat titles and bodies as forge-sourced prose. Branch automation on envelope fields and stable codes. Do not branch on HTML.
 
-## Repo metadata before you write
+## Repo metadata
 
-Agents used to fail at `issue label add` because the label did not exist yet. Remogram now exposes repo metadata as forge facts:
+Agents often fail at `issue label add` when the label does not exist. Remogram now exposes repo metadata as forge facts:
 
 ```bash
 remogram label list --json
@@ -71,23 +75,23 @@ remogram label ensure --name security --color d73a4a --json
 remogram milestone ensure --name "wave 5" --json
 ```
 
-`label ensure` is idempotent. Create if missing, reuse if present. Then attach labels to issues through the existing issue label commands.
+`label ensure` is idempotent. It creates a label when missing. It reuses a label when present. Then use issue label commands to attach labels to issues.
 
-## Rehearse writes before they hit the forge
+## Write preview
 
-`write preview` covers the major write kinds now: CR open/edit/close, issue open/edit/close/reopen, labels, assignees, comments, status set, merge execute, and checks rerun.
+`write preview` covers these write kinds: CR open, edit, and close; issue open, edit, close, and reopen; labels; assignees; comments; status set; merge execute; and checks rerun.
 
 ```bash
 remogram write preview --kind issue_open --title "Example" --body-file ./spec.md --require-configured --json
 ```
 
-Preview validates args, reports whether the write id is configured, applies the forge write budget, and can run dedupe collision checks. It does not mutate forge state.
+Preview validates arguments. It reports whether the write id is configured. It applies the forge write budget. It can run dedupe collision checks. It does not mutate forge state.
 
-Large bodies belong in `--body-file`, not inline. `doctor --json` reports `forge_write_budget` so agents stop guessing the byte cap.
+Use `--body-file` for large bodies. Do not put large bodies inline. `doctor --json` reports `forge_write_budget` so you know the byte cap.
 
-## Default secret scan on write bodies
+## Secret scan on write bodies
 
-Issue and CR writes now scan bodies through Atteguard before post. Tokens and credential-shaped text fail closed with a typed error instead of landing on the forge.
+Issue and CR writes scan bodies through [Atteguard](https://github.com/attebury/atteguard) before post. Token-shaped text fails closed with a typed error.
 
 Opt out only when you mean it:
 
@@ -95,42 +99,40 @@ Opt out only when you mean it:
 remogram issue comment --number 42 --body-file ./comment.md --no-scan-secrets --json
 ```
 
-Forge hygiene should not become accidental credential export.
+## Write failure recovery
 
-## Typed recovery when writes fail
-
-Write failures can now carry bounded `recovery` metadata:
+Write failures can include `recovery` metadata:
 
 - `failure_kind` — auth, provider unavailable, validation, stale target, sandbox isolation, and related classes
 - `retryable` — whether a blind retry might help
-- `recommended_recheck_command` — the exact read or preview to run next
-- `diagnostic_summary` — short, sanitized context
+- `recommended_recheck_command` — the read or preview command to run next
+- `diagnostic_summary` — short sanitized context
 
-Recovery is advisory. It is not permission to merge and not a bypass around `write_not_configured`.
+Recovery is advisory. It is not permission to merge. It is not a bypass for `write_not_configured`.
 
 ## Forest config and merge closeout
 
-`forest config plan` and `forest config apply` preview and apply lane forge-config updates from a Waylane registry. Apply requires an explicit `forest_config` write id. This is privileged local admin, not a default agent write.
+`forest config plan` and `forest config apply` preview and apply lane forge-config updates from a Waylane registry. Apply requires a `forest_config` write id. This is privileged local admin. It is not a default agent write.
 
-Post-merge, `merge execute` can attach bounded closeout facts when closing-ref issues remain open. It reports remediation instead of silently leaving forge state inconsistent.
+After merge, `merge execute` can attach closeout facts when closing-ref issues stay open. It reports remediation. It does not leave forge state inconsistent without notice.
 
 ## MCP hardening
 
-The MCP server now pins working directory at start and loads `.remogram.json` through a verified path. Host tokens cannot retarget Remogram to a different repo mid-session. Start MCP with cwd at the consumer repo root.
+The MCP server pins working directory at start. It loads `.remogram.json` through a verified path. A host token cannot retarget Remogram to a different repo mid-session. Start MCP with cwd at the consumer repo root.
 
 ## What did not change
 
-Remogram still emits forge facts, not workflow intent. You will not find lane roles, task ids, or planning metadata in forge packets. `merge plan` still does not execute merges. `mergeability: clean` still is not permission to merge.
+Remogram still emits forge facts. It does not emit workflow intent. Forge packets do not include lane roles, task ids, or planning metadata. `merge plan` does not execute merges. `mergeability: clean` is not permission to merge.
 
-Producer sections and forge-sourced prose are still evidence, not authority.
+Producer sections and forge-sourced prose are evidence. They are not authority.
 
 ## Where to go next
 
-Command reference, MCP tool list, write policy, and agent skills live in the Remogram repo:
+Command reference, MCP tool list, write policy, and agent skills are in the Remogram repo:
 
 - [github.com/attebury/remogram](https://github.com/attebury/remogram)
 - Agent consumer skill: `agent-skills/src/remogram/remogram-consumer/SKILL.md`
 - Bundles: `agent-skills/src/remogram/remogram-consumer/references/agent-bundles.md`
 - Write commands: `agent-skills/src/remogram/remogram-core/references/write-commands.md`
 
-If you already use Remogram for CR reads and merge planning, start with `repo bootstrap`, `cr bundle`, and `write preview`. That is where the agent workflow got tighter.
+If you already use Remogram for CR reads and merge planning, start with `repo bootstrap`, `cr bundle`, and `write preview`.

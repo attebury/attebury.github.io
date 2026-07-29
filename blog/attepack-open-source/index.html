@@ -510,7 +510,7 @@ pre[class*="language-diff-"] {
 </ul>
 
 <p><a href="https://github.com/attebury/attepack">Attepack</a> is now open source.</p>
-<p>I built Attepack because several open tools used the same JSON packet shape. The tools did not share the code that builds and checks that shape. Remogram emits forge facts. SkillPress and ReleasePress emit status and receipt packets. Each tool needs <code>type</code>, <code>schema_version</code>, <code>observed_at</code>, and <code>ok</code>. Each tool needs stable error codes when a command fails. Each repository kept its own copy of the envelope builder. Some copies were partial. Some copies were out of date.</p>
+<p>I built Attepack because several open tools used the same JSON packet shape. The tools did not share the code that builds and checks that shape. <a href="https://github.com/attebury/remogram">Remogram</a> emits forge facts. <a href="https://github.com/attebury/skillpress">SkillPress</a> and <a href="https://github.com/attebury/releasepress">ReleasePress</a> emit status and receipt packets. Each tool needs <code>type</code>, <code>schema_version</code>, <code>observed_at</code>, and <code>ok</code>. Each tool needs stable error codes when a command fails. Each repository kept its own copy of the envelope builder. Some copies were partial. Some copies were out of date.</p>
 <h2 id="the-pattern">The pattern</h2>
 <p>Error output is one example. A command fails on a bad path or a missing config key. The error message includes a home directory path. The error message also includes a token from the environment. The packet says <code>ok: false</code>. The leak is already in <code>error_message</code>. The agent logs the JSON. The secret leaves the workspace.</p>
 <p>Mutation is a second example. A tool changes forge state or writes a local file. The CLI prints success prose. Nothing records what changed. Nothing records what was intended. Nothing records whether readback matched. You cannot audit the action later except from shell history.</p>
@@ -557,7 +557,7 @@ pre[class*="language-diff-"] {
 			<p>&copy; 2026 Attebury · <a href="https://www.linkedin.com/in/attebury/?skipRedirect=true">LinkedIn</a></p>
 		</footer>
 
-		<!-- This page `/blog/attepack-open-source/` was built on 2026-07-29T05:42:40.079Z -->
+		<!-- This page `/blog/attepack-open-source/` was built on 2026-07-29T05:45:50.753Z -->
 		<script type="module" src="/dist/cC8wS6ZjFU.js"></script>
 	</body>
 </html>

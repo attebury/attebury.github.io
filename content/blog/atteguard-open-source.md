@@ -11,27 +11,34 @@ tags:
 ---
 [Atteguard](https://github.com/attebury/atteguard) is now open source.
 
-I built it after an adversarial security review across the Forest tool stack. The same bug shape kept appearing in different repos. The tool would have a real guard for a trust decision. Then a second path into the same decision would bypass it, or trust caller-supplied data, or use a shortcut that looked safe until you tested symlinks or flag injection.
+I built Atteguard after a security review of the Forest tool stack. The same defect type appeared in many repositories. A tool had a real guard for a trust decision. Then a second path into the same decision did not use the guard. The second path trusted data from the caller. Or the second path used a short check that failed when a symlink or a flag injection was present.
 
-That is not a team discipline problem. It is duplicated security code. Fix it in one tool. Reinvent it in the next. Break it again in a helper file six months later.
+This is not a team process problem. This is shared security code that each tool copies. You repair the defect in one tool. You write the same code again in the next tool. You break the same rule again in a helper file later.
 
 ## The pattern
 
-Path containment is a common example. You write a check that keeps output inside a trusted root. A symlink inside the root points outside. A naive check resolves the candidate against itself and passes. The write still escapes.
+Path containment is one example. You write a check that keeps output inside a trusted root. A symlink inside the root points outside the root. A weak check compares the candidate path to itself and accepts it. The write still leaves the root.
 
-Command execution is the same story. You allowlist argv in the main command path. A helper builds a shell string. A test fixture passes a ref that starts with `-`. Git treats it as a flag.
+Command execution is a second example. You allow only approved argv in the main command path. A helper builds a shell string. A test fixture sends a ref that starts with `-`. Git reads the ref as a flag.
 
-Signing is the same story again. You verify a signature packet. The verifier reads the public key from the packet it is trying to verify. An attacker generates a key pair, signs arbitrary data, and embeds their own key. The check passes for the wrong reason.
+Signature verification is a third example. You verify a signature packet. The verifier reads the public key from the packet that it verifies. An attacker makes a key pair, signs data, and puts that public key in the packet. The check accepts the signature for the wrong reason.
 
 ## What Atteguard is for
 
-Atteguard extracts the recurring fixes into one library. Path containment that survives symlinks. Secret scanning and redaction. Argv template allowlisting. Git ref validation before subprocess calls. Signature verification with a caller-supplied trusted key. An AST checker that compares `authority-claims.json` to actual write call sites in source.
+Atteguard puts the shared repairs in one library. The library can:
 
-It is a library. It is not a CLI. It does not grant merge authority. It does not run release workflows. You import the module you need and wire it into your tool. Atteguard gives you the guard code. Your tool must still install that guard on every path that needs it.
+- Keep a path inside a trusted root when symlinks are present.
+- Scan text for secrets and remove secret data before you show the text.
+- Allow only approved argv templates. It does not accept raw shell strings.
+- Validate a git ref before a subprocess starts.
+- Verify a signature with a trusted key from your configuration. The trusted key must not come from the packet that you verify.
+- Read `authority-claims.json` and compare it to write call sites in source code.
+
+Atteguard is a library. It is not a CLI. It does not grant merge authority. It does not run release workflows. You import the module that you need. You connect that module in your tool. Atteguard gives you the guard code. Your tool must still put that guard on every path that needs it.
 
 ## Example
 
-A tool exports files from a trusted workspace root. An agent supplies `work/report.json`. The path looks lexically inside the root. The directory is a symlink to `/tmp`.
+A tool exports files from a trusted workspace root. An agent sends `work/report.json`. The path looks as if it stays inside the root. The directory is a symlink to `/tmp`.
 
 ```js
 import { resolveContainedPath, resolveCanonicalRoot } from "atteguard/path-safety";
@@ -45,12 +52,12 @@ const { canonical_path } = resolveContainedPath({
   root,
   canonicalRoot,
 });
-// use canonical_path for the read or write — not the raw agent string
+// use canonical_path for the read or write, not the raw agent string
 ```
 
-Without the second-phase check against the root's real path, the export looks protected when it is not.
+Without the second check against the real path of the root, the export looks protected when it is not protected.
 
-Each module ships adversarial tests named `*.self-issued.test.js`. Those tests encode the exploit the module was written to block. Pin an exact version. These are trust primitives. An old install can look safe when it is not.
+Each module includes adversarial tests named `*.self-issued.test.js`. These tests encode the exploit that the module must block. Pin an exact version. These modules are trust controls. An old install can look safe when it is not safe.
 
 Install steps, subpath exports, module examples, release policy, and API detail are in the README.
 

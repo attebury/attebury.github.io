@@ -55,17 +55,25 @@
     <updated>2026-07-26T00:00:00Z</updated>
     <id>https://attebury.dev/blog/atteguard-open-source/</id>
     <content type="html">&lt;p&gt;&lt;a href=&quot;https://github.com/attebury/atteguard&quot;&gt;Atteguard&lt;/a&gt; is now open source.&lt;/p&gt;
-&lt;p&gt;I built it after an adversarial security review across the Forest tool stack. The same bug shape kept appearing in different repos. The tool would have a real guard for a trust decision. Then a second path into the same decision would bypass it, or trust caller-supplied data, or use a shortcut that looked safe until you tested symlinks or flag injection.&lt;/p&gt;
-&lt;p&gt;That is not a team discipline problem. It is duplicated security code. Fix it in one tool. Reinvent it in the next. Break it again in a helper file six months later.&lt;/p&gt;
+&lt;p&gt;I built Atteguard after a security review of the Forest tool stack. The same defect type appeared in many repositories. A tool had a real guard for a trust decision. Then a second path into the same decision did not use the guard. The second path trusted data from the caller. Or the second path used a short check that failed when a symlink or a flag injection was present.&lt;/p&gt;
+&lt;p&gt;This is not a team process problem. This is shared security code that each tool copies. You repair the defect in one tool. You write the same code again in the next tool. You break the same rule again in a helper file later.&lt;/p&gt;
 &lt;h2 id=&quot;the-pattern&quot;&gt;The pattern&lt;/h2&gt;
-&lt;p&gt;Path containment is a common example. You write a check that keeps output inside a trusted root. A symlink inside the root points outside. A naive check resolves the candidate against itself and passes. The write still escapes.&lt;/p&gt;
-&lt;p&gt;Command execution is the same story. You allowlist argv in the main command path. A helper builds a shell string. A test fixture passes a ref that starts with &lt;code&gt;-&lt;/code&gt;. Git treats it as a flag.&lt;/p&gt;
-&lt;p&gt;Signing is the same story again. You verify a signature packet. The verifier reads the public key from the packet it is trying to verify. An attacker generates a key pair, signs arbitrary data, and embeds their own key. The check passes for the wrong reason.&lt;/p&gt;
+&lt;p&gt;Path containment is one example. You write a check that keeps output inside a trusted root. A symlink inside the root points outside the root. A weak check compares the candidate path to itself and accepts it. The write still leaves the root.&lt;/p&gt;
+&lt;p&gt;Command execution is a second example. You allow only approved argv in the main command path. A helper builds a shell string. A test fixture sends a ref that starts with &lt;code&gt;-&lt;/code&gt;. Git reads the ref as a flag.&lt;/p&gt;
+&lt;p&gt;Signature verification is a third example. You verify a signature packet. The verifier reads the public key from the packet that it verifies. An attacker makes a key pair, signs data, and puts that public key in the packet. The check accepts the signature for the wrong reason.&lt;/p&gt;
 &lt;h2 id=&quot;what-atteguard-is-for&quot;&gt;What Atteguard is for&lt;/h2&gt;
-&lt;p&gt;Atteguard extracts the recurring fixes into one library. Path containment that survives symlinks. Secret scanning and redaction. Argv template allowlisting. Git ref validation before subprocess calls. Signature verification with a caller-supplied trusted key. An AST checker that compares &lt;code&gt;authority-claims.json&lt;/code&gt; to actual write call sites in source.&lt;/p&gt;
-&lt;p&gt;It is a library. It is not a CLI. It does not grant merge authority. It does not run release workflows. You import the module you need and wire it into your tool. Atteguard gives you the guard code. Your tool must still install that guard on every path that needs it.&lt;/p&gt;
+&lt;p&gt;Atteguard puts the shared repairs in one library. The library can:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Keep a path inside a trusted root when symlinks are present.&lt;/li&gt;
+&lt;li&gt;Scan text for secrets and remove secret data before you show the text.&lt;/li&gt;
+&lt;li&gt;Allow only approved argv templates. It does not accept raw shell strings.&lt;/li&gt;
+&lt;li&gt;Validate a git ref before a subprocess starts.&lt;/li&gt;
+&lt;li&gt;Verify a signature with a trusted key from your configuration. The trusted key must not come from the packet that you verify.&lt;/li&gt;
+&lt;li&gt;Read &lt;code&gt;authority-claims.json&lt;/code&gt; and compare it to write call sites in source code.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Atteguard is a library. It is not a CLI. It does not grant merge authority. It does not run release workflows. You import the module that you need. You connect that module in your tool. Atteguard gives you the guard code. Your tool must still put that guard on every path that needs it.&lt;/p&gt;
 &lt;h2 id=&quot;example&quot;&gt;Example&lt;/h2&gt;
-&lt;p&gt;A tool exports files from a trusted workspace root. An agent supplies &lt;code&gt;work/report.json&lt;/code&gt;. The path looks lexically inside the root. The directory is a symlink to &lt;code&gt;/tmp&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;A tool exports files from a trusted workspace root. An agent sends &lt;code&gt;work/report.json&lt;/code&gt;. The path looks as if it stays inside the root. The directory is a symlink to &lt;code&gt;/tmp&lt;/code&gt;.&lt;/p&gt;
 &lt;pre class=&quot;language-js&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-js&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; resolveContainedPath&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; resolveCanonicalRoot &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;atteguard/path-safety&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
 
 &lt;span class=&quot;token keyword&quot;&gt;const&lt;/span&gt; root &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;/path/to/trusted-workspace&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
@@ -77,9 +85,9 @@
   root&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
   canonicalRoot&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
 &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;token comment&quot;&gt;// use canonical_path for the read or write — not the raw agent string&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Without the second-phase check against the root&#39;s real path, the export looks protected when it is not.&lt;/p&gt;
-&lt;p&gt;Each module ships adversarial tests named &lt;code&gt;*.self-issued.test.js&lt;/code&gt;. Those tests encode the exploit the module was written to block. Pin an exact version. These are trust primitives. An old install can look safe when it is not.&lt;/p&gt;
+&lt;span class=&quot;token comment&quot;&gt;// use canonical_path for the read or write, not the raw agent string&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Without the second check against the real path of the root, the export looks protected when it is not protected.&lt;/p&gt;
+&lt;p&gt;Each module includes adversarial tests named &lt;code&gt;*.self-issued.test.js&lt;/code&gt;. These tests encode the exploit that the module must block. Pin an exact version. These modules are trust controls. An old install can look safe when it is not safe.&lt;/p&gt;
 &lt;p&gt;Install steps, subpath exports, module examples, release policy, and API detail are in the README.&lt;/p&gt;
 &lt;p&gt;Start here: &lt;a href=&quot;https://github.com/attebury/atteguard#readme&quot;&gt;github.com/attebury/atteguard#readme&lt;/a&gt;&lt;/p&gt;
 </content>

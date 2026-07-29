@@ -10,27 +10,31 @@ tags:
 ---
 [Attepack](https://github.com/attebury/attepack) is now open source.
 
-I built it because the Forest tool stack kept converging on the same JSON packet shape without sharing the code that enforces it. Remogram emits forge facts. Waylane emits execution facts. Verigram emits work judgments. Atteway emits audit view models. They all need `type`, `schema_version`, `observed_at`, and `ok`. They all need stable error codes when something fails. Each repo was carrying its own copy of the envelope builder, or a partial copy, or a copy that had not caught up yet.
-
-That is not a documentation problem. It is schema drift with extra steps. One tool adds provider attribution fields. Another tool forgets. A third tool puts the timestamp in a different place. Agent automation starts branching on three dialects of the same idea.
+I built Attepack because several open tools used the same JSON packet shape. The tools did not share the code that builds and checks that shape. Remogram emits forge facts. SkillPress and ReleasePress emit status and receipt packets. Each tool needs `type`, `schema_version`, `observed_at`, and `ok`. Each tool needs stable error codes when a command fails. Each repository kept its own copy of the envelope builder. Some copies were partial. Some copies were out of date.
 
 ## The pattern
 
-Error output is the painful case. A command fails on a bad path or a missing config key. The error message includes a home directory path and a token that was in the environment. The packet says `ok: false`, but the leak is already in `error_message`. The agent logs the JSON and the secret leaves the workspace.
+Error output is one example. A command fails on a bad path or a missing config key. The error message includes a home directory path. The error message also includes a token from the environment. The packet says `ok: false`. The leak is already in `error_message`. The agent logs the JSON. The secret leaves the workspace.
 
-Mutation is the second case. A tool changes forge state or writes a local file. The CLI prints success prose. Nothing records what changed, what was intended, or whether readback matched. You cannot audit the action later except from shell history.
+Mutation is a second example. A tool changes forge state or writes a local file. The CLI prints success prose. Nothing records what changed. Nothing records what was intended. Nothing records whether readback matched. You cannot audit the action later except from shell history.
 
-Facts versus diagnostics is the third case. A routing failure gets emitted with the same envelope as a forge fact. Downstream code treats a diagnostic event like merge authority. The boundary was never explicit in the packet shape.
+Facts versus diagnostics is a third example. A routing failure uses the same envelope as a forge fact. Downstream code treats a diagnostic event as if it were a forge fact. The packet shape does not mark the boundary.
 
 ## What Attepack is for
 
-Attepack holds the shared plumbing for JSON-first tools. Envelope build and validation. A single error code registry. Error message and detail cleaning through [Atteguard](https://github.com/attebury/atteguard) text-safety. Mutation receipts with digests and readback status. A separate diagnostic event builder that emits through `execFile`, not a shell string.
+Attepack puts the shared packet code in one library. The library can:
 
-It is a library. It does not contain your domain logic. Remogram still owns forge fact types. Waylane still owns execution facts. Attepack owns the envelope, the error shape, and the hygiene around both.
+- Build and validate a packet envelope.
+- Use one error code registry.
+- Clean error messages and detail fields through [Atteguard](https://github.com/attebury/atteguard) text-safety.
+- Build mutation receipts with digests and readback status.
+- Build diagnostic events and emit them through `execFile`. It does not emit through a shell string.
+
+Attepack is a library. It is not a CLI. It does not hold your domain logic. Remogram still owns forge fact types. SkillPress and ReleasePress still own their status and receipt types. Attepack owns the envelope, the error shape, and the shared clean-up around both.
 
 ## Example
 
-A forge read fails because write commands are not configured. The tool should emit a structured error, not a string that echoes the config snippet and the workspace path.
+A forge read fails because write commands are not configured. The tool must emit a structured error. The tool must not echo the config text or the workspace path.
 
 ```js
 import { buildErrorPacket } from "attepack";
@@ -50,9 +54,9 @@ const packet = buildErrorPacket({
 });
 ```
 
-Attepack normalizes the error code, scrubs paths and secrets from messages and allowlisted detail fields, and keeps the envelope shape the same as a success packet. Automation can branch on `error_code`. It does not need to parse prose.
+Attepack normalizes the error code. It removes paths and secrets from messages and from allowlisted detail fields. It keeps the envelope shape the same as a success packet. Automation can branch on `error_code`. It does not need to parse prose.
 
-Reads and writes stay different artifacts. Fact packets answer what the forge observed. Mutation receipts answer what changed and whether readback verified it. Diagnostic events answer what failed in command routing. Attepack gives each one a shape. Your tool still owns the policy of when a mutation is allowed.
+Fact packets, mutation receipts, and diagnostic events stay separate. Fact packets answer what the forge observed. Mutation receipts answer what changed and whether readback verified it. Diagnostic events answer what failed in command routing. Attepack gives each one a shape. Your tool still owns the policy for when a mutation is allowed.
 
 Install steps, subpath exports, module layout, and API detail are in the README.
 

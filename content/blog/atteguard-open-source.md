@@ -11,7 +11,7 @@ tags:
 ---
 [Atteguard](https://github.com/attebury/atteguard) is now open source.
 
-I built Atteguard after a security review of the Forest tool stack. The same defect type appeared in many repositories. A tool had a real guard for a trust decision. Then a second path into the same decision did not use the guard. The second path trusted data from the caller. Or the second path used a short check that failed when a symlink or a flag injection was present.
+I built Atteguard after a security review across Remogram, SkillPress, ReleasePress, and related open tooling. The same defect type appeared in many repositories. A tool had a real guard for a trust decision. Then a second path into the same decision did not use the guard. The second path trusted data from the caller. Or the second path used a short check that failed when a symlink or a flag injection was present.
 
 ## The pattern
 
@@ -32,7 +32,7 @@ Atteguard puts the shared repairs in one library. The library can:
 - Verify a signature with a trusted key from your configuration. The trusted key must not come from the packet that you verify.
 - Read `authority-claims.json` and compare it to write call sites in source code.
 
-Atteguard is a library. It is not a CLI. It does not grant merge authority. It does not run release workflows. You import the module that you need. You connect that module in your tool. Atteguard gives you the guard code. Your tool must still put that guard on every path that needs it.
+Atteguard is a library. It is not a CLI. You import the module that you need. You connect that module in your tool. Atteguard gives you the guard code. Your tool must still put that guard on every path that needs it.
 
 ## Example
 

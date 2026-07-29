@@ -511,7 +511,7 @@ pre[class*="language-diff-"] {
 </ul>
 
 <p><a href="https://github.com/attebury/atteguard">Atteguard</a> is now open source.</p>
-<p>I built Atteguard after a security review of the Forest tool stack. The same defect type appeared in many repositories. A tool had a real guard for a trust decision. Then a second path into the same decision did not use the guard. The second path trusted data from the caller. Or the second path used a short check that failed when a symlink or a flag injection was present.</p>
+<p>I built Atteguard after a security review across Remogram, SkillPress, ReleasePress, and related open tooling. The same defect type appeared in many repositories. A tool had a real guard for a trust decision. Then a second path into the same decision did not use the guard. The second path trusted data from the caller. Or the second path used a short check that failed when a symlink or a flag injection was present.</p>
 <h2 id="the-pattern">The pattern</h2>
 <p>Path containment is one example. You write a check that keeps output inside a trusted root. A symlink inside the root points outside the root. A weak check compares the candidate path to itself and accepts it. The write still leaves the root.</p>
 <p>Command execution is a second example. You allow only approved argv in the main command path. A helper builds a shell string. A test fixture sends a ref that starts with <code>-</code>. Git reads the ref as a flag.</p>
@@ -526,7 +526,7 @@ pre[class*="language-diff-"] {
 <li>Verify a signature with a trusted key from your configuration. The trusted key must not come from the packet that you verify.</li>
 <li>Read <code>authority-claims.json</code> and compare it to write call sites in source code.</li>
 </ul>
-<p>Atteguard is a library. It is not a CLI. It does not grant merge authority. It does not run release workflows. You import the module that you need. You connect that module in your tool. Atteguard gives you the guard code. Your tool must still put that guard on every path that needs it.</p>
+<p>Atteguard is a library. It is not a CLI. You import the module that you need. You connect that module in your tool. Atteguard gives you the guard code. Your tool must still put that guard on every path that needs it.</p>
 <h2 id="example">Example</h2>
 <p>A tool exports files from a trusted workspace root. An agent sends <code>work/report.json</code>. The path looks as if it stays inside the root. The directory is a symlink to <code>/tmp</code>.</p>
 <pre class="language-js" tabindex="0"><code class="language-js"><span class="token keyword">import</span> <span class="token punctuation">{</span> resolveContainedPath<span class="token punctuation">,</span> resolveCanonicalRoot <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"atteguard/path-safety"</span><span class="token punctuation">;</span>
@@ -556,7 +556,7 @@ pre[class*="language-diff-"] {
 			<p>&copy; 2026 Attebury · <a href="https://www.linkedin.com/in/attebury/?skipRedirect=true">LinkedIn</a></p>
 		</footer>
 
-		<!-- This page `/blog/atteguard-open-source/` was built on 2026-07-29T05:36:48.165Z -->
+		<!-- This page `/blog/atteguard-open-source/` was built on 2026-07-29T05:42:40.079Z -->
 		<script type="module" src="/dist/cC8wS6ZjFU.js"></script>
 	</body>
 </html>

@@ -17,17 +17,23 @@
     <updated>2026-07-27T00:00:00Z</updated>
     <id>https://attebury.dev/blog/attepack-open-source/</id>
     <content type="html">&lt;p&gt;&lt;a href=&quot;https://github.com/attebury/attepack&quot;&gt;Attepack&lt;/a&gt; is now open source.&lt;/p&gt;
-&lt;p&gt;I built it because the Forest tool stack kept converging on the same JSON packet shape without sharing the code that enforces it. Remogram emits forge facts. Waylane emits execution facts. Verigram emits work judgments. Atteway emits audit view models. They all need &lt;code&gt;type&lt;/code&gt;, &lt;code&gt;schema_version&lt;/code&gt;, &lt;code&gt;observed_at&lt;/code&gt;, and &lt;code&gt;ok&lt;/code&gt;. They all need stable error codes when something fails. Each repo was carrying its own copy of the envelope builder, or a partial copy, or a copy that had not caught up yet.&lt;/p&gt;
-&lt;p&gt;That is not a documentation problem. It is schema drift with extra steps. One tool adds provider attribution fields. Another tool forgets. A third tool puts the timestamp in a different place. Agent automation starts branching on three dialects of the same idea.&lt;/p&gt;
+&lt;p&gt;I built Attepack because several open tools used the same JSON packet shape. The tools did not share the code that builds and checks that shape. Remogram emits forge facts. SkillPress and ReleasePress emit status and receipt packets. Each tool needs &lt;code&gt;type&lt;/code&gt;, &lt;code&gt;schema_version&lt;/code&gt;, &lt;code&gt;observed_at&lt;/code&gt;, and &lt;code&gt;ok&lt;/code&gt;. Each tool needs stable error codes when a command fails. Each repository kept its own copy of the envelope builder. Some copies were partial. Some copies were out of date.&lt;/p&gt;
 &lt;h2 id=&quot;the-pattern&quot;&gt;The pattern&lt;/h2&gt;
-&lt;p&gt;Error output is the painful case. A command fails on a bad path or a missing config key. The error message includes a home directory path and a token that was in the environment. The packet says &lt;code&gt;ok: false&lt;/code&gt;, but the leak is already in &lt;code&gt;error_message&lt;/code&gt;. The agent logs the JSON and the secret leaves the workspace.&lt;/p&gt;
-&lt;p&gt;Mutation is the second case. A tool changes forge state or writes a local file. The CLI prints success prose. Nothing records what changed, what was intended, or whether readback matched. You cannot audit the action later except from shell history.&lt;/p&gt;
-&lt;p&gt;Facts versus diagnostics is the third case. A routing failure gets emitted with the same envelope as a forge fact. Downstream code treats a diagnostic event like merge authority. The boundary was never explicit in the packet shape.&lt;/p&gt;
+&lt;p&gt;Error output is one example. A command fails on a bad path or a missing config key. The error message includes a home directory path. The error message also includes a token from the environment. The packet says &lt;code&gt;ok: false&lt;/code&gt;. The leak is already in &lt;code&gt;error_message&lt;/code&gt;. The agent logs the JSON. The secret leaves the workspace.&lt;/p&gt;
+&lt;p&gt;Mutation is a second example. A tool changes forge state or writes a local file. The CLI prints success prose. Nothing records what changed. Nothing records what was intended. Nothing records whether readback matched. You cannot audit the action later except from shell history.&lt;/p&gt;
+&lt;p&gt;Facts versus diagnostics is a third example. A routing failure uses the same envelope as a forge fact. Downstream code treats a diagnostic event as if it were a forge fact. The packet shape does not mark the boundary.&lt;/p&gt;
 &lt;h2 id=&quot;what-attepack-is-for&quot;&gt;What Attepack is for&lt;/h2&gt;
-&lt;p&gt;Attepack holds the shared plumbing for JSON-first tools. Envelope build and validation. A single error code registry. Error message and detail cleaning through &lt;a href=&quot;https://github.com/attebury/atteguard&quot;&gt;Atteguard&lt;/a&gt; text-safety. Mutation receipts with digests and readback status. A separate diagnostic event builder that emits through &lt;code&gt;execFile&lt;/code&gt;, not a shell string.&lt;/p&gt;
-&lt;p&gt;It is a library. It does not contain your domain logic. Remogram still owns forge fact types. Waylane still owns execution facts. Attepack owns the envelope, the error shape, and the hygiene around both.&lt;/p&gt;
+&lt;p&gt;Attepack puts the shared packet code in one library. The library can:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Build and validate a packet envelope.&lt;/li&gt;
+&lt;li&gt;Use one error code registry.&lt;/li&gt;
+&lt;li&gt;Clean error messages and detail fields through &lt;a href=&quot;https://github.com/attebury/atteguard&quot;&gt;Atteguard&lt;/a&gt; text-safety.&lt;/li&gt;
+&lt;li&gt;Build mutation receipts with digests and readback status.&lt;/li&gt;
+&lt;li&gt;Build diagnostic events and emit them through &lt;code&gt;execFile&lt;/code&gt;. It does not emit through a shell string.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Attepack is a library. It is not a CLI. It does not hold your domain logic. Remogram still owns forge fact types. SkillPress and ReleasePress still own their status and receipt types. Attepack owns the envelope, the error shape, and the shared clean-up around both.&lt;/p&gt;
 &lt;h2 id=&quot;example&quot;&gt;Example&lt;/h2&gt;
-&lt;p&gt;A forge read fails because write commands are not configured. The tool should emit a structured error, not a string that echoes the config snippet and the workspace path.&lt;/p&gt;
+&lt;p&gt;A forge read fails because write commands are not configured. The tool must emit a structured error. The tool must not echo the config text or the workspace path.&lt;/p&gt;
 &lt;pre class=&quot;language-js&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-js&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; buildErrorPacket &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;attepack&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
 
 &lt;span class=&quot;token keyword&quot;&gt;const&lt;/span&gt; packet &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;buildErrorPacket&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
@@ -43,8 +49,8 @@
     &lt;span class=&quot;token literal-property property&quot;&gt;remediation&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;Add cr_open to write_commands in .example.json&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
   &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
 &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Attepack normalizes the error code, scrubs paths and secrets from messages and allowlisted detail fields, and keeps the envelope shape the same as a success packet. Automation can branch on &lt;code&gt;error_code&lt;/code&gt;. It does not need to parse prose.&lt;/p&gt;
-&lt;p&gt;Reads and writes stay different artifacts. Fact packets answer what the forge observed. Mutation receipts answer what changed and whether readback verified it. Diagnostic events answer what failed in command routing. Attepack gives each one a shape. Your tool still owns the policy of when a mutation is allowed.&lt;/p&gt;
+&lt;p&gt;Attepack normalizes the error code. It removes paths and secrets from messages and from allowlisted detail fields. It keeps the envelope shape the same as a success packet. Automation can branch on &lt;code&gt;error_code&lt;/code&gt;. It does not need to parse prose.&lt;/p&gt;
+&lt;p&gt;Fact packets, mutation receipts, and diagnostic events stay separate. Fact packets answer what the forge observed. Mutation receipts answer what changed and whether readback verified it. Diagnostic events answer what failed in command routing. Attepack gives each one a shape. Your tool still owns the policy for when a mutation is allowed.&lt;/p&gt;
 &lt;p&gt;Install steps, subpath exports, module layout, and API detail are in the README.&lt;/p&gt;
 &lt;p&gt;Start here: &lt;a href=&quot;https://github.com/attebury/attepack#readme&quot;&gt;github.com/attebury/attepack#readme&lt;/a&gt;&lt;/p&gt;
 </content>
@@ -55,7 +61,7 @@
     <updated>2026-07-26T00:00:00Z</updated>
     <id>https://attebury.dev/blog/atteguard-open-source/</id>
     <content type="html">&lt;p&gt;&lt;a href=&quot;https://github.com/attebury/atteguard&quot;&gt;Atteguard&lt;/a&gt; is now open source.&lt;/p&gt;
-&lt;p&gt;I built Atteguard after a security review of the Forest tool stack. The same defect type appeared in many repositories. A tool had a real guard for a trust decision. Then a second path into the same decision did not use the guard. The second path trusted data from the caller. Or the second path used a short check that failed when a symlink or a flag injection was present.&lt;/p&gt;
+&lt;p&gt;I built Atteguard after a security review across Remogram, SkillPress, ReleasePress, and related open tooling. The same defect type appeared in many repositories. A tool had a real guard for a trust decision. Then a second path into the same decision did not use the guard. The second path trusted data from the caller. Or the second path used a short check that failed when a symlink or a flag injection was present.&lt;/p&gt;
 &lt;h2 id=&quot;the-pattern&quot;&gt;The pattern&lt;/h2&gt;
 &lt;p&gt;Path containment is one example. You write a check that keeps output inside a trusted root. A symlink inside the root points outside the root. A weak check compares the candidate path to itself and accepts it. The write still leaves the root.&lt;/p&gt;
 &lt;p&gt;Command execution is a second example. You allow only approved argv in the main command path. A helper builds a shell string. A test fixture sends a ref that starts with &lt;code&gt;-&lt;/code&gt;. Git reads the ref as a flag.&lt;/p&gt;
@@ -70,7 +76,7 @@
 &lt;li&gt;Verify a signature with a trusted key from your configuration. The trusted key must not come from the packet that you verify.&lt;/li&gt;
 &lt;li&gt;Read &lt;code&gt;authority-claims.json&lt;/code&gt; and compare it to write call sites in source code.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Atteguard is a library. It is not a CLI. It does not grant merge authority. It does not run release workflows. You import the module that you need. You connect that module in your tool. Atteguard gives you the guard code. Your tool must still put that guard on every path that needs it.&lt;/p&gt;
+&lt;p&gt;Atteguard is a library. It is not a CLI. You import the module that you need. You connect that module in your tool. Atteguard gives you the guard code. Your tool must still put that guard on every path that needs it.&lt;/p&gt;
 &lt;h2 id=&quot;example&quot;&gt;Example&lt;/h2&gt;
 &lt;p&gt;A tool exports files from a trusted workspace root. An agent sends &lt;code&gt;work/report.json&lt;/code&gt;. The path looks as if it stays inside the root. The directory is a symlink to &lt;code&gt;/tmp&lt;/code&gt;.&lt;/p&gt;
 &lt;pre class=&quot;language-js&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-js&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; resolveContainedPath&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; resolveCanonicalRoot &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;atteguard/path-safety&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;

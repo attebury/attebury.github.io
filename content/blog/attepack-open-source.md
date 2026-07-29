@@ -10,7 +10,7 @@ tags:
 ---
 [Attepack](https://github.com/attebury/attepack) is now open source.
 
-I built Attepack because several open tools used the same JSON packet shape. The tools did not share the code that builds and checks that shape. Remogram emits forge facts. SkillPress and ReleasePress emit status and receipt packets. Each tool needs `type`, `schema_version`, `observed_at`, and `ok`. Each tool needs stable error codes when a command fails. Each repository kept its own copy of the envelope builder. Some copies were partial. Some copies were out of date.
+I built Attepack because several open tools used the same JSON packet shape. The tools did not share the code that builds and checks that shape. [Remogram](https://github.com/attebury/remogram) emits forge facts. [SkillPress](https://github.com/attebury/skillpress) and [ReleasePress](https://github.com/attebury/releasepress) emit status and receipt packets. Each tool needs `type`, `schema_version`, `observed_at`, and `ok`. Each tool needs stable error codes when a command fails. Each repository kept its own copy of the envelope builder. Some copies were partial. Some copies were out of date.
 
 ## The pattern
 

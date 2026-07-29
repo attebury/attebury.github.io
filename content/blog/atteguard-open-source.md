@@ -11,7 +11,7 @@ tags:
 ---
 [Atteguard](https://github.com/attebury/atteguard) is now open source.
 
-I built Atteguard after a security review across Remogram, SkillPress, ReleasePress, and related open tooling. The same defect type appeared in many repositories. A tool had a real guard for a trust decision. Then a second path into the same decision did not use the guard. The second path trusted data from the caller. Or the second path used a short check that failed when a symlink or a flag injection was present.
+I built Atteguard after a security review across [Remogram](https://github.com/attebury/remogram), [SkillPress](https://github.com/attebury/skillpress), [ReleasePress](https://github.com/attebury/releasepress), and related open tooling. The same defect type appeared in many repositories. A tool had a real guard for a trust decision. Then a second path into the same decision did not use the guard. The second path trusted data from the caller. Or the second path used a short check that failed when a symlink or a flag injection was present.
 
 ## The pattern
 

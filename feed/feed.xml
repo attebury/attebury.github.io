@@ -6,11 +6,23 @@
   <subtitle>Notes and writing.</subtitle>
   <link href="https://attebury.dev/feed/feed.xml" rel="self" />
   <link href="https://attebury.dev/" />
-  <updated>2026-07-27T00:00:00Z</updated>
+  <updated>2026-08-14T00:00:00Z</updated>
   <id>https://attebury.dev/</id>
   <author>
     <name>Attebury</name>
   </author>
+  <entry>
+    <title>Attefact: independently checkable evidence for claims</title>
+    <link href="https://attebury.dev/blog/attefact-open-source/" />
+    <updated>2026-08-14T00:00:00Z</updated>
+    <id>https://attebury.dev/blog/attefact-open-source/</id>
+    <content type="html">&lt;p&gt;I open-sourced &lt;a href=&quot;https://github.com/attebury/attefact&quot;&gt;Attefact&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;A claim is cheap. Evidence that still matches the claim six months later is not. Most systems store a URL, a screenshot, or a &amp;quot;verified&amp;quot; flag, then treat that as proof forever. Links rot. Pages change. Archives disappear. The flag stays green.&lt;/p&gt;
+&lt;p&gt;Attefact is a small evidence engine for that problem. It&#39;s not a product for one domain. It doesn&#39;t decide what a claim means. It answers a narrower question: given a claim, how do you attach independently checkable evidence, keep that evidence honest over time, and leave room for a person to vouch for the parts no public artifact can prove?&lt;/p&gt;
+&lt;p&gt;v0.2.0 is out. Nine evidence kinds. Three bindings: pin a git object, snapshot a URL and hash the response, or upload a file that has no origin URL. A rot-detection state machine: unverified, live, drifted, unreachable, archived. Insert-only schema for Postgres and SQLite, with triggers that actually block updates and deletes.&lt;/p&gt;
+&lt;p&gt;If you&#39;re building something that has to keep receipts, start here: &lt;a href=&quot;https://github.com/attebury/attefact&quot;&gt;github.com/attebury/attefact&lt;/a&gt;&lt;/p&gt;
+</content>
+  </entry>
   <entry>
     <title>Attepack: shared packet envelopes for JSON-first tools</title>
     <link href="https://attebury.dev/blog/attepack-open-source/" />
@@ -481,57 +493,6 @@ topogram trace compare &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;
 &lt;p&gt;That future isn&#39;t guaranteed. Some domains need formal releases. Some teams will keep stack ownership because the cost of mistakes is high. Some work will always require deep specialist experience.&lt;/p&gt;
 &lt;p&gt;But if software work keeps compressing, the team may stop asking, &amp;quot;Which stack team owns this?&amp;quot;&lt;/p&gt;
 &lt;p&gt;It may start asking, &amp;quot;What wave are we in, who is strongest for this part, and what proof makes the change true?&amp;quot;&lt;/p&gt;
-</content>
-  </entry>
-  <entry>
-    <title>When Software Work Gets Shopified</title>
-    <link href="https://attebury.dev/blog/when-software-work-gets-shopified/" />
-    <updated>2026-05-28T00:00:00Z</updated>
-    <id>https://attebury.dev/blog/when-software-work-gets-shopified/</id>
-    <content type="html">&lt;p&gt;AI can feel like a break from software history, but I think it&#39;s more useful to see it as a continuation.&lt;/p&gt;
-&lt;p&gt;We&#39;ve been compressing roles for decades. We used to pay one person to design a website, another to code it, another to wire forms, another to publish content, and another to keep the stack running. Then blogs, CMS tools, hosted site builders, and services like Shopify absorbed large parts of that work.&lt;/p&gt;
-&lt;p&gt;The work didn&#39;t disappear. It moved into platforms.&lt;/p&gt;
-&lt;p&gt;Design became themes and systems. Content publishing became an editor. Commerce became a configured service. Hosting became a deploy button. A single operator could do work that once required a small web team.&lt;/p&gt;
-&lt;p&gt;AI may do something similar to software development.&lt;/p&gt;
-&lt;h2 id=&quot;role-compression-is-the-pattern&quot;&gt;Role compression is the pattern&lt;/h2&gt;
-&lt;p&gt;The important pattern isn&#39;t replacement. It&#39;s compression.&lt;/p&gt;
-&lt;p&gt;When platforms mature, they package repeated work into defaults, workflows, and constraints. The old specialist work becomes a product surface. A smaller team can operate at a higher level.&lt;/p&gt;
-&lt;p&gt;That&#39;s what happened to many websites. The average business no longer needs a dedicated designer, front-end developer, back-end developer, hosting operator, and analytics consultant just to sell products online. Shopify compressed much of that into a service.&lt;/p&gt;
-&lt;p&gt;AI can compress software work in a similar way:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Scaffolding becomes a prompt or template.&lt;/li&gt;
-&lt;li&gt;Boilerplate implementation becomes generated code.&lt;/li&gt;
-&lt;li&gt;Refactoring becomes an agent task.&lt;/li&gt;
-&lt;li&gt;Test creation becomes a guided loop.&lt;/li&gt;
-&lt;li&gt;Documentation updates become part of the change.&lt;/li&gt;
-&lt;li&gt;Design translation becomes a conversation with constraints.&lt;/li&gt;
-&lt;li&gt;Investigation becomes a context query instead of hours of repo reading.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;If that&#39;s accurate, entire areas of software development will get platformed. Not all of software, and not all of engineering judgment. But many repeated slices of implementation, maintenance, migration, and glue work will get absorbed into tools and workflows we haven&#39;t fully named yet.&lt;/p&gt;
-&lt;h2 id=&quot;what-teams-might-look-like&quot;&gt;What teams might look like&lt;/h2&gt;
-&lt;p&gt;Smaller teams may cover more surface area.&lt;/p&gt;
-&lt;p&gt;One person may own product shape, user experience, and implementation for a bounded feature. Another may own platform rules, security posture, release quality, and proof. A designer may work directly with generated components and semantic UI contracts. A domain expert may author workflows and acceptance criteria that agents turn into code.&lt;/p&gt;
-&lt;p&gt;The team becomes less like a row of specialists passing tickets downstream and more like a small group of operators coordinating systems.&lt;/p&gt;
-&lt;p&gt;That doesn&#39;t make engineering easier. It changes where the difficulty lives.&lt;/p&gt;
-&lt;p&gt;The hard parts move from reading requirements and typing code to choosing intent, setting boundaries, reviewing generated work, proving behavior, and keeping the system coherent through time.&lt;/p&gt;
-&lt;p&gt;In that world, the riskiest gap isn&#39;t whether an agent can produce code. The risk is whether the agent is changing the right thing for the right reason, in the right part of the system, with the right proof.&lt;/p&gt;
-&lt;h2 id=&quot;where-ai-needs-structure&quot;&gt;Where AI needs structure&lt;/h2&gt;
-&lt;p&gt;AI coding tools are good at local transformation. They edit files, write tests, explain code, and propose refactors. They&#39;re less reliable when the work depends on product intent, ownership, unstated decisions, or system boundaries.&lt;/p&gt;
-&lt;p&gt;That&#39;s where role compression gets messy.&lt;/p&gt;
-&lt;p&gt;If one person uses AI to do the work of several roles, that person needs more than a faster editor. They need a way to keep the compressed roles from blending together into guesses.&lt;/p&gt;
-&lt;p&gt;The product decision shouldn&#39;t disappear into the implementation. The implementation shouldn&#39;t invent the contract. The contract shouldn&#39;t ignore proof. Proof shouldn&#39;t be an afterthought.&lt;/p&gt;
-&lt;p&gt;AI makes those separations more important, not less.&lt;/p&gt;
-&lt;h2 id=&quot;what-we-still-have-to-carry&quot;&gt;What we still have to carry&lt;/h2&gt;
-&lt;p&gt;I&#39;ve been building tools for agentic development partly because of this compression. When fewer people cover more roles, the team needs durable answers to boring questions:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;What should be true after this change?&lt;/li&gt;
-&lt;li&gt;Who owns this boundary?&lt;/li&gt;
-&lt;li&gt;What proof counts as done?&lt;/li&gt;
-&lt;li&gt;What context is safe to give an agent, and what is only evidence?&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;You can answer those in tickets, chat, and memory for a while. Then the team moves faster and the answers stop matching the code.&lt;/p&gt;
-&lt;p&gt;Compressed teams still need a map of what they&#39;re building. AI can help produce the code. We still have to know what should be true, who owns it, what rules apply, and how to prove the change is done.&lt;/p&gt;
-&lt;p&gt;That&#39;s not a product pitch. It&#39;s the problem I&#39;m working in.&lt;/p&gt;
 </content>
   </entry>
 </feed>

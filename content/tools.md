@@ -8,6 +8,12 @@ const eleventyNavigation = {
 
 Open source tools for agentic development. Each tool has a GitHub repository and a post on this site.
 
+## [Attefact](https://github.com/attebury/attefact)
+
+Evidence and verification engine. Attach independently checkable evidence to a claim, keep that evidence honest over time, and detect when it rots.
+
+[GitHub](https://github.com/attebury/attefact) · [Post](/blog/attefact-open-source/)
+
 ## [Atteguard](https://github.com/attebury/atteguard)
 
 Shared security code for CLI tools and agent tools. Path containment, secret scanning, argv allowlists, git ref checks, and signature verification with a caller-supplied trusted key.
